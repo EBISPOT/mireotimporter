@@ -5,7 +5,13 @@ import org.semanticweb.owlapi.model.*;
  */
 public class MireotManager {
 
-
+    /**
+     * 
+     * @param manager
+     * @param ontologyID
+     * @param targetClass
+     * @return
+     */
     public OWLClass getNamedClassParent(OWLOntologyManager manager, IRI ontologyID, OWLClass targetClass){
 
         OWLOntology sourceOntology = manager.getOntology(ontologyID);
@@ -14,7 +20,11 @@ public class MireotManager {
         for (OWLSubClassOfAxiom ax : sourceOntology
                 .getSubClassAxiomsForSubClass(targetClass)) {
             OWLClassExpression superCls = ax.getSuperClass();
-            System.out.println("superCls");
+
+            if(!superCls.isAnonymous()) {
+
+                System.out.println("named super class " + superCls.toString());
+            }
         }
 
 
