@@ -1,5 +1,8 @@
 import org.semanticweb.owlapi.model.*;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * Created by malone on 27/03/2015.
  */
@@ -9,12 +12,16 @@ public class MireotManager {
      * 
      * @param manager
      * @param ontologyID
-     * @param targetClass
+     * @param targetClassIRI
      * @return
      */
-    public OWLClass getNamedClassParent(OWLOntologyManager manager, IRI ontologyID, OWLClass targetClass){
+    public Set<OWLClass> getNamedClassParents(OWLOntologyManager manager, IRI ontologyID, IRI targetClassIRI){
 
         OWLOntology sourceOntology = manager.getOntology(ontologyID);
+        Set<OWLClass> parents = new HashSet<OWLClass>();
+
+        OWLDataFactory factory = manager.getOWLDataFactory();
+        OWLClass targetClass = factory.getOWLClass(targetClassIRI);
 
 
         for (OWLSubClassOfAxiom ax : sourceOntology
@@ -22,18 +29,36 @@ public class MireotManager {
             OWLClassExpression superCls = ax.getSuperClass();
 
             if(!superCls.isAnonymous()) {
-
-                System.out.println("named super class " + superCls.toString());
+                parents.add(superCls.asOWLClass());
             }
         }
 
+        for (OWLClass o : parents){
+            System.out.println("named super class " + o.toString());
 
-        //replace
-        return null;
+        }
+
+        return parents;
     }
 
 
-    public void getClassAnnotations(){
+    public Set<OWLAnnotation> getClassAnnotations(OWLOntologyManager manager, IRI ontologyID, IRI targetClassIRI){
+
+
+        OWLOntology sourceOntology = manager.getOntology(ontologyID);
+        Set<OWLClass> parents = new HashSet<OWLClass>();
+
+        OWLDataFactory factory = manager.getOWLDataFactory();
+        OWLClass targetClass = factory.getOWLClass(targetClassIRI);
+
+        Set<OWLAnnotation> targetClassAnnotations = targetClass.getAnnotations(sourceOntology);
+
+        for (OWLAnnotation o : targetClassAnnotations){
+            System.out.println("annotation: " + o.toString());
+
+        }
+
+        return targetClassAnnotations;
 
     }
 

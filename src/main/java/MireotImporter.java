@@ -5,6 +5,7 @@
 
 import org.semanticweb.owlapi.model.*;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -17,30 +18,17 @@ public class MireotImporter {
 
         System.setProperty("entityExpansionLimit", "100000000");
 
-        MireotManager manager = new MireotManager();
-        OntologyIO ioManager = new OntologyIO();
+        ModuleProfileExtractor moduleExtractor = new ModuleProfileExtractor();
 
-        IRI activeOntology = IRI.create("http://www.ebi.ac.uk/efo/efo.owl");
-        ioManager.loadOntologyFromFileLocation("/Users/malone/EFO/EFOInternalEBI/ExperimentalFactorOntology/ExFactorInOWL/releasecandidate/efo_ordo_module.owl");
-        ioManager.loadOntologyFromFileLocation("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
+        //some test data
+        Set<String> classes = new HashSet<String>();
+        classes.add("http://www.ebi.ac.uk/efo/EFO_0000400");
+        String activeOntology = "http://www.ebi.ac.uk/efo/efo.owl";
+        Set<String> ontoLocations = new HashSet<String>();
+        ontoLocations.add("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
+        ontoLocations.add("/Users/malone/EFO/EFOInternalEBI/ExperimentalFactorOntology/ExFactorInOWL/releasecandidate/efo_ordo_module.owl");
 
-        //load test ontologies
-        OWLOntologyManager m = ioManager.getManager();
-
-        Set<OWLOntology> loadedOntologies = m.getOntologies();
-        System.out.println("Loaded ontologies " + loadedOntologies.toString());
-
-        for (OWLOntology o : loadedOntologies){
-            System.out.println(o.getOntologyID().getOntologyIRI());
-        }
-
-
-        //mint test class
-        OWLDataFactory factory = m.getOWLDataFactory();
-        IRI iri = IRI.create("http://www.ebi.ac.uk/efo/EFO_0000400");
-        OWLClass exampleClass = factory.getOWLClass(iri);
-        manager.getNamedClassParent(m, activeOntology, exampleClass);
-
+        moduleExtractor.getMireotBasic(classes,activeOntology,ontoLocations);
 
     }
 

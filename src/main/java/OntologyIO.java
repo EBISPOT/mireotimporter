@@ -24,8 +24,6 @@ public class OntologyIO {
     public void loadOntologyFromFileLocation (String loadLocation) {
 
         File f = new File(loadLocation);
-        System.out.println("exists? : " + f.exists());
-
 
         //File ordo = new File("/Users/malone/EFO/EFOInternalEBI/ExperimentalFactorOntology/ExFactorInOWL/releasecandidate/efo_ordo_module.owl");
         //manager.addIRIMapper(new SimpleIRIMapper(IRI.create("http://www.orpha.net/ontology/orphaEfoMod.owl"), IRI.create(f)));
