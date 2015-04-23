@@ -22,14 +22,19 @@ public class MireotImporter {
 
         //some test data
         Set<String> classes = new HashSet<String>();
-        classes.add("http://www.ebi.ac.uk/efo/EFO_0003767");
+        classes.add("http://purl.obolibrary.org/obo/CL_0007004");
         classes.add("http://www.ebi.ac.uk/efo/EFO_0000400");
-        String activeOntology = "http://www.ebi.ac.uk/efo/efo.owl";
+        classes.add("http://www.ebi.ac.uk/efo/EFO_00004100");
+
+        String sourceOntology = "http://purl.obolibrary.org/obo/cl.owl";
+        String targetOntology = "http://www.ebi.ac.uk/efo/efo.owl";
         Set<String> ontoLocations = new HashSet<String>();
         ontoLocations.add("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
-        //ontoLocations.add("/Users/malone/EFO/EFOInternalEBI/ExperimentalFactorOntology/ExFactorInOWL/releasecandidate/efo_ordo_module.owl");
+        ontoLocations.add("/Users/malone/cl.owl");
 
-        OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, activeOntology, ontoLocations);
+        //OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes,sourceOntology, ontoLocations);
+        OWLOntology ontologyModule = moduleExtractor.getMireotAware(classes, sourceOntology, targetOntology, ontoLocations);
+
 
         OntologyIO io = new OntologyIO();
         io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/efo_mireot.owl");
