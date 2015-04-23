@@ -10,7 +10,7 @@ import java.util.Set;
 public class ModuleProfileExtractor {
 
 
-    public OWLOntology getMireotBasic(Set<String> targetClass, String activeOntology, Set<String> ontologyLocations) {
+    public OWLOntology getMireotBasic(Set<String> targetClassNames, String activeOntology, Set<String> ontologyLocations) {
 
         try {
             //create variables required
@@ -21,13 +21,9 @@ public class ModuleProfileExtractor {
             //variables for storing ontology module
             // Get hold of an ontology manager
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
-            // Let's load an ontology from the web
-            IRI iriTemp = IRI
-                    .create("http://mireotmodule.owl");
-
+            IRI iriTemp = IRI.create("http://mireotmodule.owl");
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
             OWLDataFactory factory = tempManager.getOWLDataFactory();
-
 
             //load all ontologies
             for (String location : ontologyLocations) {
@@ -41,24 +37,29 @@ public class ModuleProfileExtractor {
 
             //iterate through target classes and extract basic mireot
             IRI activeOntologyIRI = IRI.create(activeOntology);
-            for (String target : targetClass) {
-                IRI iri = IRI.create(target);
+            for (String target : targetClassNames) {
+                //create iri and owlclass of target class
+                IRI targetIRI = IRI.create(target);
+                OWLClass targetOWLClass = factory.getOWLClass(targetIRI);
 
-                //get named parents
-                namedParents = mireotManager.getNamedClassParents(manager, activeOntologyIRI, iri);
+                //get named parents of target class
+                namedParents = mireotManager.getNamedClassParents(manager, activeOntologyIRI, targetIRI);
 
                 //add named classes to ontology
+                for (OWLClass parentClass : namedParents) {
+                    OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(parentClass);
 
-                for (OWLClass o : namedParents) {
-                    OWLDeclarationAxiom declarationAxiom = factory.getOWLDeclarationAxiom(o);
-                    tempManager.addAxiom(tempOntology, declarationAxiom);
+                    OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(targetOWLClass, parentClass);
+
+                    tempManager.addAxiom(tempOntology, namedParentAxiom);
+                    tempManager.addAxiom(tempOntology, subclassAxiom);
                 }
 
                 //get annotations
-                annotations = mireotManager.getClassAnnotations(manager, activeOntologyIRI, iri);
+                annotations = mireotManager.getClassAnnotations(manager, activeOntologyIRI, targetIRI);
 
                 for (OWLAnnotation a : annotations) {
-                    OWLAnnotationAxiom declarationAxiom = factory.getOWLAnnotationAssertionAxiom(iri, a);
+                    OWLAnnotationAxiom declarationAxiom = factory.getOWLAnnotationAssertionAxiom(targetIRI, a);
                     tempManager.addAxiom(tempOntology, declarationAxiom);
                 }
 
