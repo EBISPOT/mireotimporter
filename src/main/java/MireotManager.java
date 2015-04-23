@@ -54,7 +54,7 @@ public class MireotManager {
         Set<OWLAnnotation> targetClassAnnotations = targetClass.getAnnotations(sourceOntology);
 
         for (OWLAnnotation o : targetClassAnnotations){
-            System.out.println("annotation: " + o.toString());
+           System.out.println("annotation: " + o.toString());
 
         }
 

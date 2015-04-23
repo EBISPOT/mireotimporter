@@ -26,9 +26,13 @@ public class MireotImporter {
         String activeOntology = "http://www.ebi.ac.uk/efo/efo.owl";
         Set<String> ontoLocations = new HashSet<String>();
         ontoLocations.add("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
-        ontoLocations.add("/Users/malone/EFO/EFOInternalEBI/ExperimentalFactorOntology/ExFactorInOWL/releasecandidate/efo_ordo_module.owl");
+        //ontoLocations.add("/Users/malone/EFO/EFOInternalEBI/ExperimentalFactorOntology/ExFactorInOWL/releasecandidate/efo_ordo_module.owl");
 
-        moduleExtractor.getMireotBasic(classes,activeOntology,ontoLocations);
+        OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, activeOntology, ontoLocations);
+
+        OntologyIO io = new OntologyIO();
+        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/efo_mireot.owl");
+
 
     }
 

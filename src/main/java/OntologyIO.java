@@ -1,11 +1,9 @@
 import org.semanticweb.owlapi.apibinding.OWLManager;
-import org.semanticweb.owlapi.model.IRI;
-import org.semanticweb.owlapi.model.OWLOntology;
-import org.semanticweb.owlapi.model.OWLOntologyCreationException;
-import org.semanticweb.owlapi.model.OWLOntologyManager;
+import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.SimpleIRIMapper;
 
 import java.io.File;
+import java.util.Set;
 
 /**
  * Created by malone on 27/03/2015.
@@ -51,6 +49,21 @@ public class OntologyIO {
 
 
 
+    public void saveOntologyToFileLocation(OWLOntology ontology, String saveLocation){
+
+        try{
+                OWLOntologyManager m = ontology.getOWLOntologyManager();
+
+                //save ontology
+                m.saveOntology(ontology, IRI.create(saveLocation));
+                System.out.println("ontology saved");
+            }
+        catch(Exception e){
+            System.out.println("Ontology failed to save.");
+            e.printStackTrace();
+        }
+
+    }
 
 
 
