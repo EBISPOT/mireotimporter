@@ -39,8 +39,8 @@ public class MireotImporter {
         OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, sourceOntology, ontoLocations);
 
 
-        //OntologyIO io = new OntologyIO();
-        //io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/efo_mireot.owl");
+        OntologyIO io = new OntologyIO();
+        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/efo_full_mireot.owl");
 
 
     }

@@ -1,7 +1,9 @@
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.util.OWLClassExpressionVisitorAdapter;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -267,7 +269,7 @@ public class ModuleProfileExtractor {
 
 
 
-    public OWLOntology getFullClosure(Set<String> targetClassNames, String sourceOntology, Set<String> ontologyLocations) {
+    public OWLOntology getFullClosure(Set<String> targetClassNames, String sourceOntologyName, Set<String> ontologyLocations) {
 
         try {
 
@@ -280,7 +282,6 @@ public class ModuleProfileExtractor {
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
             IRI iriTemp = IRI.create("http://mireotmodule.owl");
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
-            OWLDataFactory factory = tempManager.getOWLDataFactory();
 
             //load all ontologies
             for (String location : ontologyLocations) {
@@ -292,17 +293,47 @@ public class ModuleProfileExtractor {
             Set<OWLOntology> loadedOntologies = manager.getOntologies();
             System.out.println("Loaded ontologies " + loadedOntologies.toString());
 
-
             //iterate through target classes and extract full closure
-            IRI sourceOntologyIRI = IRI.create(sourceOntology);
+            IRI sourceOntologyIRI = IRI.create(sourceOntologyName);
             for (String target : targetClassNames) {
 
                 System.out.println("Attempting to extract full closure for " + target);
                 //create iri and owlclass of target class
                 IRI targetIRI = IRI.create(target);
 
-                //get mireot ontology of target
+                //get parent classes for target class
                 mireotManager.getNamedClassParentsToRoot(manager, sourceOntologyIRI, targetIRI, tempOntology);
+
+                //get partial closure of target class
+                mireotManager.getPartialClosureForNamedClass(manager, sourceOntologyIRI, targetIRI, tempOntology);
+
+                //grab the source ontology and the owlclass for the target IRI
+                OWLOntology sourceOntology = manager.getOntology(sourceOntologyIRI);
+                OWLDataFactory factory = manager.getOWLDataFactory();
+                OWLClass targetClass = factory.getOWLClass(targetIRI);
+
+                //create somewhere to store the named classes in the axioms
+                Set<OWLClass> namedClassesInAxiom = new HashSet<OWLClass>();
+
+                //get RHS named classes for each axiom on target class
+                for (OWLSubClassOfAxiom ax : sourceOntology.getSubClassAxiomsForSubClass(targetClass)) {
+                    OWLClassExpression superCls = ax.getSuperClass();
+
+                    //if the axiom is not subclassof some named class (this is already covered
+                    if (superCls instanceof OWLAnonymousClassExpression) {
+                        for (OWLClass namedClassInAxiom : superCls.getClassesInSignature()) {
+                            namedClassesInAxiom.add(namedClassInAxiom);
+
+                        }
+                    }
+                }
+
+
+                for(OWLClass c : namedClassesInAxiom){
+                    System.out.println("Named calsses in axioms: " + c.toString());
+                    mireotManager.getNamedClassParentsToRoot(manager, sourceOntologyIRI, c.getIRI(), tempOntology);
+
+                }
 
                 //add annotations for all named classes in the new module
                 for (OWLClass moduleClass : tempOntology.getClassesInSignature()) {
@@ -319,19 +350,60 @@ public class ModuleProfileExtractor {
 
                 }//end for
 
-                //get partial closure of target
-                mireotManager.getPartialClosureForNamedClass(manager, sourceOntologyIRI, targetIRI, tempOntology);
-
-                //get RHS named classes for each axiom
-
-
 
             }
+
+            return tempOntology;
 
         } catch (Exception e) {
             e.printStackTrace();
         }
         return null;
     }
+
+
+
+    //inner class for visiting restrictions
+    class RestrictionVisitor extends OWLClassExpressionVisitorAdapter {
+
+        private final Set<OWLClass> processedClasses;
+        private final Set<OWLObjectPropertyExpression> restrictedProperties;
+        private final Set<OWLOntology> onts;
+
+        public RestrictionVisitor(Set<OWLOntology> onts) {
+            restrictedProperties = new HashSet<OWLObjectPropertyExpression>();
+            processedClasses = new HashSet<OWLClass>();
+            this.onts = onts;
+        }
+
+        public Set<OWLObjectPropertyExpression> getRestrictedProperties() {
+            return restrictedProperties;
+        }
+
+        @Override
+        public void visit(OWLClass desc) {
+            if (!processedClasses.contains(desc)) {
+                // If we are processing inherited restrictions then we
+                // recursively visit named supers. Note that we need to keep
+                // track of the classes that we have processed so that we don't
+                // get caught out by cycles in the taxonomy
+                processedClasses.add(desc);
+                for (OWLOntology ont : onts) {
+                    for (OWLSubClassOfAxiom ax : ont
+                            .getSubClassAxiomsForSubClass(desc)) {
+                        ax.getSuperClass().accept(this);
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void visit(OWLObjectSomeValuesFrom desc) {
+            // This method gets called when a class expression is an existential
+            // (someValuesFrom) restriction and it asks us to visit it
+            restrictedProperties.add(desc.getProperty());
+        }
+    }
+
 
 }
