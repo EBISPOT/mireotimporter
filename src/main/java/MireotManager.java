@@ -1,9 +1,17 @@
 import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.reasoner.BufferingMode;
+import org.semanticweb.owlapi.reasoner.NodeSet;
+import org.semanticweb.owlapi.reasoner.OWLReasoner;
+import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
+import org.semanticweb.owlapi.reasoner.structural.StructuralReasoner;
+import uk.ac.manchester.cs.owlapi.modularity.ModuleType;
+import uk.ac.manchester.cs.owlapi.modularity.SyntacticLocalityModuleExtractor;
 
 import javax.xml.transform.Source;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
@@ -144,7 +152,6 @@ public class MireotManager {
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
             OWLDataFactory factory = tempManager.getOWLDataFactory();
             OWLClass targetClass = factory.getOWLClass(targetClassIRI);
-            OWLOntology sourceOntology = manager.getOntology(sourceOntologyID);
             OWLOntology targetOntology = manager.getOntology(targetOntologyIRI);
 
             //get first set of parents
@@ -244,13 +251,77 @@ public class MireotManager {
                 return null;
     }
 
-    public void getSubClassOf(){
 
-    }
 
     public void getNamedClassInAxiom(){
 
     }
+
+
+    public OWLOntology getPartialClosureForNamedClass(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetClassIRI, OWLOntology tempOntology) {
+
+        //create variables for storing the ontology of parents to root with subclass axioms
+        OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
+        OWLDataFactory factory = tempManager.getOWLDataFactory();
+        OWLClass targetClass = factory.getOWLClass(targetClassIRI);
+        OWLOntology sourceOntology = manager.getOntology(sourceOntologyIRI);
+
+        //get named class axioms
+        Set<OWLClassAxiom> namedClassAxioms = getNamedClassAxioms(manager, sourceOntologyIRI, targetClassIRI);
+
+        //add axioms to tempOntology
+        for(OWLClassAxiom a : namedClassAxioms){
+            tempManager.addAxiom(tempOntology, a);
+        }
+
+        return tempOntology;
+
+    }
+
+
+
+    public Set<OWLClassAxiom> getNamedClassAxioms(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetClassIRI){
+
+        OWLOntology sourceOntology = manager.getOntology(sourceOntologyIRI);
+        Set<OWLClassAxiom> targetAxioms = new HashSet<OWLClassAxiom>();
+
+        OWLDataFactory factory = manager.getOWLDataFactory();
+        OWLClass targetClass = factory.getOWLClass(targetClassIRI);
+
+        targetAxioms = sourceOntology.getAxioms(targetClass);
+
+        for(OWLClassAxiom a : targetAxioms){
+            System.out.println("axiom on target: " + a.toString());
+        }
+
+        return targetAxioms;
+    }
+
+
+
+    public void getFullClosureForNamedClass(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetClassIRI, OWLOntology tempOntology){
+
+        try {
+            //create variables for storing the ontology of parents to root with subclass axioms
+            OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
+            OWLDataFactory factory = tempManager.getOWLDataFactory();
+            OWLClass targetClass = factory.getOWLClass(targetClassIRI);
+            OWLOntology sourceOntology = manager.getOntology(sourceOntologyIRI);
+
+            //get parents to root
+            Set<OWLClass> nextParents = getNamedClassParents(manager, sourceOntologyIRI, targetClassIRI);
+
+
+
+
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+
+
+    }
+
 
 
 }
