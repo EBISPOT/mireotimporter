@@ -154,95 +154,110 @@ public class MireotManager {
             OWLClass targetClass = factory.getOWLClass(targetClassIRI);
             OWLOntology targetOntology = manager.getOntology(targetOntologyIRI);
 
-            //get first set of parents
-            Set<OWLClass> nextParents = getNamedClassParents(manager, sourceOntologyID, targetClassIRI);
+            //first check to see if the target class is in the target ontology
+            Boolean containsTarget = targetOntology.containsClassInSignature(targetClassIRI);
 
-            //set flag to enter loop if there are parents
-            Boolean finished;
-            if (nextParents.isEmpty()) {
-                finished = true;
-            }
-            //otherwise there are parents, continue to traverse
-            else {
-                finished = false;
-                Set<OWLClass> removeList = new HashSet<OWLClass>();
-                //check to see if the parents are in the active ontology already
-                //otherwise add these first parents and the initial class
-                for (OWLClass newParent : nextParents) {
+            //if the target class is not in the ontology then continue
+            if(!containsTarget) {
+                //get first set of parents
+                Set<OWLClass> nextParents = getNamedClassParents(manager, sourceOntologyID, targetClassIRI);
 
-                    //if the class is not already in the ontology
-                    System.out.println("new Parent is "+ newParent.getIRI());
-                    if (!targetOntology.containsClassInSignature(newParent.getIRI())) {
-                        OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(newParent);
-                        OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(targetClass, newParent);
-                        tempManager.addAxiom(tempOntology, namedParentAxiom);
-                        tempManager.addAxiom(tempOntology, subclassAxiom);
-                    }
-                    //make note to remove the class if it is in the ontology already
-                    else {
-                        System.out.println("Parent is in target ontology already: " + newParent.getIRI());
-                        removeList.add(newParent);
-                    }
+                //set flag to enter loop if there are parents
+                Boolean finished;
+                if (nextParents.isEmpty()) {
+                    finished = true;
                 }
-                //if there are classes already in existance in target, remove form the mireot module
-                if(!removeList.isEmpty()){
-                    nextParents.removeAll(removeList);
-                }
-            }
-
-            if(!nextParents.isEmpty()) {
-                while (!finished) {
-                    //store next set of parents in temp set which we will use to store for output
-                    Set<OWLClass> tempParents = new HashSet<OWLClass>();
-
-                    //remove list
+                //otherwise there are parents, continue to traverse
+                else {
+                    finished = false;
                     Set<OWLClass> removeList = new HashSet<OWLClass>();
+                    //check to see if the parents are in the active ontology already
+                    //otherwise add these first parents and the initial class
+                    for (OWLClass newParent : nextParents) {
 
-                    //for each parent
-                    for (OWLClass c : nextParents) {
-                        System.out.println("parent " + c.getIRI());
+                        //if the class is not already in the ontology
+                        System.out.println("Parent is " + newParent.getIRI());
 
-                        Set<OWLClass> tempSet = getNamedClassParents(manager, sourceOntologyID, c.getIRI());
+                        if (!targetOntology.containsClassInSignature(newParent.getIRI())) {
+                            OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(newParent);
+                            OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(targetClass, newParent);
+                            tempManager.addAxiom(tempOntology, namedParentAxiom);
+                            tempManager.addAxiom(tempOntology, subclassAxiom);
+                        }
+                        //make note to remove the class if it is in the ontology already
+                        else {
+                            System.out.println("Parent is in target ontology already: " + newParent.getIRI());
+                            OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(newParent);
+                            OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(targetClass, newParent);
+                            tempManager.addAxiom(tempOntology, namedParentAxiom);
+                            tempManager.addAxiom(tempOntology, subclassAxiom);
+                            removeList.add(newParent);
+                        }
+                    }
+                    //if there are classes already in existance in target, remove form the mireot module
+                    if (!removeList.isEmpty()) {
+                        nextParents.removeAll(removeList);
+                    }
+                }
 
-                        if (!tempSet.isEmpty()) {
+                if (!nextParents.isEmpty()) {
+                    while (!finished) {
+                        //store next set of parents in temp set which we will use to store for output
+                        Set<OWLClass> tempParents = new HashSet<OWLClass>();
 
-                            //make current class a subclass of parents
-                            //add named classes to ontology
-                            for (OWLClass newParent : tempSet) {
+                        //remove list
+                        Set<OWLClass> removeList = new HashSet<OWLClass>();
 
-                                OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(newParent);
-                                OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(c, newParent);
-                                tempManager.addAxiom(tempOntology, namedParentAxiom);
-                                tempManager.addAxiom(tempOntology, subclassAxiom);
+                        //for each parent
+                        for (OWLClass c : nextParents) {
+                            System.out.println("parent " + c.getIRI());
 
-                                //remove the class if it is in the ontology
-                                if (targetOntology.containsClassInSignature(newParent.getIRI())) {
-                                    System.out.println("Exists in target ontology " + newParent.getIRI());
-                                    removeList.add(newParent);
-                                }
+                            Set<OWLClass> tempSet = getNamedClassParents(manager, sourceOntologyID, c.getIRI());
 
-                                //add to set
-                                tempParents.addAll(tempSet);
-                                if(!removeList.isEmpty()) {
-                                    tempParents.removeAll(removeList);
+                            if (!tempSet.isEmpty()) {
+
+                                //make current class a subclass of parents
+                                //add named classes to ontology
+                                for (OWLClass newParent : tempSet) {
+
+                                    OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(newParent);
+                                    OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(c, newParent);
+                                    tempManager.addAxiom(tempOntology, namedParentAxiom);
+                                    tempManager.addAxiom(tempOntology, subclassAxiom);
+
+                                    //remove the class if it is in the ontology
+                                    if (targetOntology.containsClassInSignature(newParent.getIRI())) {
+                                        System.out.println("Exists in target ontology " + newParent.getIRI());
+                                        removeList.add(newParent);
+                                    }
+
+                                    //add to set
+                                    tempParents.addAll(tempSet);
+                                    if (!removeList.isEmpty()) {
+                                        tempParents.removeAll(removeList);
+                                    }
                                 }
                             }
-                        }
-                        //stop if there are no parents - we've reached top
-                        if (tempParents.isEmpty()) {
-                            finished = true;
-                        } else {
+                            //stop if there are no parents - we've reached top
+                            if (tempParents.isEmpty()) {
+                                finished = true;
+                            } else {
 
-                            finished = false;
-                            nextParents.clear();
-                            nextParents.addAll(tempParents);
-                        }
-                    }//end for
+                                finished = false;
+                                nextParents.clear();
+                                nextParents.addAll(tempParents);
+                            }
+                        }//end for
 
-                }//end while
-            }
-
+                    }//end while
+                }
                 return tempOntology;
+
+            }
+            //the target class is in the ontology already
+            else{
+                System.out.println("Class "+targetClassIRI+ " already in target ontology");
+            }
         }
         catch(Exception e){
             e.printStackTrace();

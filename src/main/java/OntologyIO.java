@@ -1,3 +1,4 @@
+import com.javafx.tools.doclets.formats.html.SourceToHTMLConverter;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
@@ -52,17 +53,24 @@ public class OntologyIO {
                 //load ontology into it
                 OWLOntology tempOntology = tempManager.loadOntologyFromOntologyDocument(f);
 
+                Set<OWLImportsDeclaration> imports = tempOntology.getImportsDeclarations();
 
+                //if there are no imports than add straight into manager
+                if (imports.isEmpty()){
+                    IRI ontoName = tempOntology.getOntologyID().getOntologyIRI();
+                    this.manager.createOntology(tempOntology.getAxioms(), ontoName);
+                }
+                //otherwise merge all imports into the source ontology
+                else {
 
-                IRI ontoName = tempOntology.getOntologyID().getOntologyIRI();
-                //create merger
-                OWLOntologyMerger merger = new OWLOntologyMerger(tempManager);
-                OWLOntology mergedOntology = merger.createMergedOntology(tempManager, ontoName);
+                    IRI ontoName = tempOntology.getOntologyID().getOntologyIRI();
+                    //create merger
+                    OWLOntologyMerger merger = new OWLOntologyMerger(tempManager);
+                    OWLOntology mergedOntology = merger.createMergedOntology(tempManager, IRI.create("http://temp"));
 
-                this.manager.createOntology(mergedOntology.getAxioms(), ontoName);
-
+                    this.manager.createOntology(mergedOntology.getAxioms(), ontoName);
+                }
             }
-
         }
         catch (OWLOntologyCreationException e) {
             System.out.println("Ontology failed to load.");
@@ -108,11 +116,11 @@ public class OntologyIO {
     }
 
 
-    public IRI getActiveOntology() {
+    public IRI getTargetOntology() {
         return targetOntology;
     }
 
-    public void setActiveOntology(IRI activeOntology) {
-        this.targetOntology = activeOntology;
+    public void setTargetOntology(IRI targetOntology) {
+        this.targetOntology = targetOntology;
     }
 }
