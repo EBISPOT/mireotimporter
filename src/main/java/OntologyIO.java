@@ -1,8 +1,10 @@
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
+import org.semanticweb.owlapi.util.OWLOntologyMerger;
 import org.semanticweb.owlapi.util.SimpleIRIMapper;
 
 import java.io.File;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -12,6 +14,9 @@ public class OntologyIO {
 
 
     private OWLOntologyManager manager = OWLManager.createOWLOntologyManager();
+    private IRI targetOntology;
+    private Set<IRI> sourceOntologies = new HashSet<IRI>();
+
 
     /**
      * load OWL ontology into the class's manager from a file location
@@ -19,25 +24,52 @@ public class OntologyIO {
      * @param loadLocation
      * @throws OWLOntologyCreationException
      */
-    public void loadOntologyFromFileLocation (String loadLocation) {
+    public void loadOntologyFromFileLocation (String loadLocation, Boolean ignoreImports) {
+
 
         File f = new File(loadLocation);
 
-        //File ordo = new File("/Users/malone/EFO/EFOInternalEBI/ExperimentalFactorOntology/ExFactorInOWL/releasecandidate/efo_ordo_module.owl");
-        //manager.addIRIMapper(new SimpleIRIMapper(IRI.create("http://www.orpha.net/ontology/orphaEfoMod.owl"), IRI.create(f)));
-
-
         try {
-            OWLOntology ontology = this.manager.loadOntologyFromOntologyDocument(f);
+
+            //if imports are to be discarded then remove from the manager
+            if (ignoreImports){
+
+                OWLOntology ontology = this.manager.loadOntologyFromOntologyDocument(f);
+
+                System.out.println("loaded ontology " + ontology.getOntologyID().toString());
+
+                Set<OWLOntology> imports = ontology.getImports();
+                for (OWLOntology o : imports){
+                    System.out.println("removing import: " + o.getOntologyID().toString());
+                    manager.removeOntology(o);
+                }
+
+            }
+            //otherwise we need to include all imports, merge them into this single ontology for walking up tree
+            else{
+                //create temp manager we'll merge into first
+                OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
+                //load ontology into it
+                OWLOntology tempOntology = tempManager.loadOntologyFromOntologyDocument(f);
+
+
+
+                IRI ontoName = tempOntology.getOntologyID().getOntologyIRI();
+                //create merger
+                OWLOntologyMerger merger = new OWLOntologyMerger(tempManager);
+                OWLOntology mergedOntology = merger.createMergedOntology(tempManager, ontoName);
+
+                this.manager.createOntology(mergedOntology.getAxioms(), ontoName);
+
+            }
+
         }
         catch (OWLOntologyCreationException e) {
             System.out.println("Ontology failed to load.");
             e.printStackTrace();
         }
-
-        System.out.println("loaded ontology ");
-
     }
+
 
     /**
      * get the OWLOntologyManager used to load ontologies into for this IO class
@@ -66,5 +98,21 @@ public class OntologyIO {
     }
 
 
+    public Set<IRI> getSourceOntologies() {
+        return sourceOntologies;
+    }
 
+
+    public void setSourceOntologies(Set<IRI> sources) {
+        this.sourceOntologies = sources;
+    }
+
+
+    public IRI getActiveOntology() {
+        return targetOntology;
+    }
+
+    public void setActiveOntology(IRI activeOntology) {
+        this.targetOntology = activeOntology;
+    }
 }
