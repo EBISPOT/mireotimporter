@@ -45,7 +45,7 @@ public class MireotManager {
             }
         }
         else{
-            System.out.println("Could not find class " + targetClassIRI);
+            System.out.println("Could not find class " + targetClassIRI + " in ontology " + ontologyID.toString());
         }
 
         return parents;
@@ -54,20 +54,14 @@ public class MireotManager {
 
     public Set<OWLAnnotation> getClassAnnotations(OWLOntologyManager manager, IRI ontologyID, IRI targetClassIRI){
 
-
+        //get source ontology and handle to the class in question
         OWLOntology sourceOntology = manager.getOntology(ontologyID);
-        Set<OWLClass> parents = new HashSet<OWLClass>();
-
         OWLDataFactory factory = manager.getOWLDataFactory();
         OWLClass targetClass = factory.getOWLClass(targetClassIRI);
 
+        //get all the annotations for the target class
         Set<OWLAnnotation> targetClassAnnotations = targetClass.getAnnotations(sourceOntology);
 
-        /*for (OWLAnnotation o : targetClassAnnotations){
-           System.out.println("annotation: " + o.toString());
-
-        }
-        */
         return targetClassAnnotations;
     }
 
@@ -93,6 +87,7 @@ public class MireotManager {
                 finished = false;
                 //add these first parents and the initial class
                 for (OWLClass newParent : nextParents) {
+
                     OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(newParent);
                     OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(targetClass, newParent);
                     tempManager.addAxiom(tempOntology, namedParentAxiom);
@@ -113,6 +108,7 @@ public class MireotManager {
                         //make current class a subclass of parents
                         //add named classes to ontology
                         for (OWLClass newParent : tempSet) {
+
                             OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(newParent);
                             OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(c, newParent);
                             tempManager.addAxiom(tempOntology, namedParentAxiom);
@@ -124,7 +120,7 @@ public class MireotManager {
                     }
 
                 }
-                //stop if there are no parents - we've reached top
+                //stop if there are no parents - we've reached root
                 if (tempParents.isEmpty()) {
                     finished = true;
                 } else {
@@ -262,7 +258,6 @@ public class MireotManager {
         catch(Exception e){
             e.printStackTrace();
         }
-
                 return null;
     }
 

@@ -17,39 +17,32 @@ public class ModuleProfileExtractor {
      * Extract a basic MIREOT for a set of named classes. This corresponds to the MIREOT publication
      * in Courtot et al, (2011)
      *
-     * @param targetClasses The set of class IRIs for which the mireot module is required
+     * @param targetClasses     The set of class IRIs for which the mireot module is required
      * @param ontologyLocations The set of ontology locations from which the source is contained
-     * @param sourceOntologies The set of ontologies from which the mireot should be extracted (i.e. the 'full' ontologies)
+     * @param sourceOntologies  The set of ontologies from which the mireot should be extracted (i.e. the 'full' ontologies)
      * @return
      */
     public OWLOntology getMireotBasic(Set<IRI> targetClasses, Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports) {
 
         try {
+            //load all ontologies
+            OntologyIO ioManager = this.loadAllOntologies(ontologyLocations, sourceOntologies, ignoreImports, null);
+            //get handle to ontologies and manager they are loaded in to
+            OWLOntologyManager manager = ioManager.getManager();
+
             //create variables required
             MireotManager mireotManager = new MireotManager();
-            OntologyIO ioManager = new OntologyIO();
-            Set<OWLClass> namedParents = new HashSet<OWLClass>();
-            Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
             //variables for storing ontology module
             // Get hold of an ontology manager
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
             IRI iriTemp = IRI.create("http://mireotmodule.owl");
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
             OWLDataFactory factory = tempManager.getOWLDataFactory();
-
-            //load all ontologies
-            for (String location : ontologyLocations) {
-                ioManager.loadOntologyFromFileLocation(location, ignoreImports);
-            }
-            ioManager.setSourceOntologies(sourceOntologies);
-
-            //get handle to ontologies and manager they are loaded in to
-            OWLOntologyManager manager = ioManager.getManager();
-            Set<OWLOntology> loadedOntologies = manager.getOntologies();
-            System.out.println("Loaded ontologies " + loadedOntologies.toString());
+            Set<OWLClass> namedParents = new HashSet<OWLClass>();
+            Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
 
             //iterate through target classes and extract basic mireot
-            for(IRI sourceIRI : sourceOntologies) {
+            for (IRI sourceIRI : sourceOntologies) {
                 for (IRI target : targetClasses) {
 
                     OWLClass targetOWLClass = factory.getOWLClass(target);
@@ -95,9 +88,13 @@ public class ModuleProfileExtractor {
 
         try {
 
+            //load all ontologies
+            OntologyIO ioManager = this.loadAllOntologies(ontologyLocations, sourceOntologies, ignoreImports, null);
+            //get handle to ontologies and manager they are loaded in to
+            OWLOntologyManager manager = ioManager.getManager();
+
             //create variables required
             MireotManager mireotManager = new MireotManager();
-            OntologyIO ioManager = new OntologyIO();
             //variables for storing ontology module
             // Get hold of an ontology manager
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
@@ -105,29 +102,8 @@ public class ModuleProfileExtractor {
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
             OWLDataFactory factory = tempManager.getOWLDataFactory();
 
-            //load all ontologies
-            for (String location : ontologyLocations) {
-                ioManager.loadOntologyFromFileLocation(location, ignoreImports);
-            }
-
-            //set source ontologies
-            ioManager.setSourceOntologies(sourceOntologies);
-
-            Set<IRI> sources = ioManager.getSourceOntologies();
-
-            for(IRI iri : sources){
-
-                System.out.println("source: " + iri.toString());
-            }
-
-
-            //get handle to ontologies and manager they are loaded in to
-            OWLOntologyManager manager = ioManager.getManager();
-            Set<OWLOntology> loadedOntologies = manager.getOntologies();
-            System.out.println("Loaded ontologies " + loadedOntologies.toString());
-
             //iterate through each source ontology
-            for(IRI sourceIRI : sourceOntologies) {
+            for (IRI sourceIRI : sourceOntologies) {
                 //iterate through target classes and extract full mireot
                 for (IRI target : targetClasses) {
 
@@ -161,15 +137,22 @@ public class ModuleProfileExtractor {
     }
 
 
-
-
     public OWLOntology getMireotMerge(Set<IRI> targetClasses, Set<String> ontologyLocations, Set<IRI> sourceOntologies, IRI targetOntologyIRI, Boolean ignoreImports) {
 
         try {
 
+            //check to see if source and target ontologies overlap - source can not have same id as target
+            if (sourceOntologies.contains(targetOntologyIRI)) {
+                throw new IllegalArgumentException("Source ontology IRIs() overlap with target ontology IRI");
+            }
+
+            //load all ontologies
+            OntologyIO ioManager = this.loadAllOntologies(ontologyLocations, sourceOntologies, ignoreImports, null);
+            //get handle to ontologies and manager they are loaded in to
+            OWLOntologyManager manager = ioManager.getManager();
+
             //create variables required
             MireotManager mireotManager = new MireotManager();
-            OntologyIO ioManager = new OntologyIO();
             //variables for storing ontology module
             // Get hold of an ontology manager
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
@@ -177,22 +160,8 @@ public class ModuleProfileExtractor {
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
             OWLDataFactory factory = tempManager.getOWLDataFactory();
 
-            //load all ontologies
-            for (String location : ontologyLocations) {
-                ioManager.loadOntologyFromFileLocation(location, ignoreImports);
-            }
-
-            //set the source and target ontologies
-            ioManager.setSourceOntologies(sourceOntologies);
-            ioManager.setTargetOntology(targetOntologyIRI);
-
-            //get handle to ontologies and manager they are loaded in to
-            OWLOntologyManager manager = ioManager.getManager();
-            Set<OWLOntology> loadedOntologies = manager.getOntologies();
-            System.out.println("Loaded ontologies " + loadedOntologies.toString());
-
             //iterate through each source ontology
-            for(IRI sourceIRI : sourceOntologies) {
+            for (IRI sourceIRI : sourceOntologies) {
                 //iterate through target classes and extract full mireot
                 for (IRI targetClass : targetClasses) {
 
@@ -228,14 +197,17 @@ public class ModuleProfileExtractor {
     }
 
 
-    public OWLOntology getPartialClosure(Set<IRI> targetClassNames, String sourceOntology, Set<String> ontologyLocations, Boolean ignoreImports) {
+    public OWLOntology getPartialClosure(Set<IRI> targetClasses, Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports) {
 
         try {
 
+            //load all ontologies
+            OntologyIO ioManager = this.loadAllOntologies(ontologyLocations, sourceOntologies, ignoreImports, null);
+            //get handle to ontologies and manager they are loaded in to
+            OWLOntologyManager manager = ioManager.getManager();
+
             //create variables required
             MireotManager mireotManager = new MireotManager();
-            OntologyIO ioManager = new OntologyIO();
-            Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
             //variables for storing ontology module
             // Get hold of an ontology manager
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
@@ -243,35 +215,28 @@ public class ModuleProfileExtractor {
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
             OWLDataFactory factory = tempManager.getOWLDataFactory();
 
-            //load all ontologies
-            for (String location : ontologyLocations) {
-                ioManager.loadOntologyFromFileLocation(location, ignoreImports);
-            }
 
-            //get handle to ontologies and manager they are loaded in to
-            OWLOntologyManager manager = ioManager.getManager();
-            Set<OWLOntology> loadedOntologies = manager.getOntologies();
-            System.out.println("Loaded ontologies " + loadedOntologies.toString());
+            //iterate through each source ontology
+            for (IRI sourceIRI : sourceOntologies) {
+                //iterate through target classes and extract partial closure
+                for (IRI target : targetClasses) {
 
-            //iterate through target classes and extract partial closure
-            IRI sourceOntologyIRI = IRI.create(sourceOntology);
-            for (IRI target : targetClassNames) {
+                    System.out.println("Attempting to extract partial closure for " + target);
 
-                System.out.println("Attempting to extract partial closure for " + target);
+                    //get partial closure of target
+                    mireotManager.getPartialClosureForNamedClass(manager, sourceIRI, target, tempOntology);
 
-                //get partial closure of target
-                mireotManager.getPartialClosureForNamedClass(manager, sourceOntologyIRI, target, tempOntology);
+                    //add annotations for named classes in the new module
+                    Set<OWLAnnotation> tempAnnotations = mireotManager.getClassAnnotations(manager, sourceIRI, target);
 
-                //add annotations for named classes in the new module
-                Set<OWLAnnotation> tempAnnotations = mireotManager.getClassAnnotations(manager, sourceOntologyIRI, target);
-
-                //if annotations have been extracted add them to ontology module
-                if (!tempAnnotations.isEmpty()) {
-                    for (OWLAnnotation a : tempAnnotations) {
-                        OWLAnnotationAxiom annotationAxiom = factory.getOWLAnnotationAssertionAxiom(target, a);
-                        tempManager.addAxiom(tempOntology, annotationAxiom);
+                    //if annotations have been extracted add them to ontology module
+                    if (!tempAnnotations.isEmpty()) {
+                        for (OWLAnnotation a : tempAnnotations) {
+                            OWLAnnotationAxiom annotationAxiom = factory.getOWLAnnotationAssertionAxiom(target, a);
+                            tempManager.addAxiom(tempOntology, annotationAxiom);
+                        }
                     }
-                }
+                }//end for
             }//end for
 
             return tempOntology;
@@ -283,86 +248,79 @@ public class ModuleProfileExtractor {
     }
 
 
-
-    public OWLOntology getFullClosure(Set<IRI> targetClassIRIs, String sourceOntologyName, Set<String> ontologyLocations, Boolean ignoreImports) {
+    public OWLOntology getFullClosure(Set<IRI> targetClassIRIs, Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports) {
 
         try {
 
+            //load all ontologies
+            OntologyIO ioManager = this.loadAllOntologies(ontologyLocations, sourceOntologies, ignoreImports, null);
+            //get handle to ontologies and manager they are loaded in to
+            OWLOntologyManager manager = ioManager.getManager();
+
             //create variables required
             MireotManager mireotManager = new MireotManager();
-            OntologyIO ioManager = new OntologyIO();
-            Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
             //variables for storing ontology module
             // Get hold of an ontology manager
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
             IRI iriTemp = IRI.create("http://mireotmodule.owl");
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
 
-            //load all ontologies
-            for (String location : ontologyLocations) {
-                ioManager.loadOntologyFromFileLocation(location, ignoreImports);
-            }
+            //iterate through each source ontology
+            for (IRI sourceIRI : sourceOntologies) {
+                for (IRI target : targetClassIRIs) {
 
-            //get handle to ontologies and manager they are loaded in to
-            OWLOntologyManager manager = ioManager.getManager();
-            Set<OWLOntology> loadedOntologies = manager.getOntologies();
-            System.out.println("Loaded ontologies " + loadedOntologies.toString());
+                    System.out.println("Attempting to extract full closure for " + target);
 
-            //iterate through target classes and extract full closure
-            IRI sourceOntologyIRI = IRI.create(sourceOntologyName);
-            for (IRI target : targetClassIRIs) {
+                    //get parent classes for target class
+                    mireotManager.getNamedClassParentsToRoot(manager, sourceIRI, target, tempOntology);
 
-                System.out.println("Attempting to extract full closure for " + target);
+                    //get partial closure of target class
+                    mireotManager.getPartialClosureForNamedClass(manager, sourceIRI, target, tempOntology);
 
-                //get parent classes for target class
-                mireotManager.getNamedClassParentsToRoot(manager, sourceOntologyIRI, target, tempOntology);
+                    //grab the source ontology and the owlclass for the target IRI
+                    OWLOntology sourceOntology = manager.getOntology(sourceIRI);
+                    OWLDataFactory factory = manager.getOWLDataFactory();
+                    OWLClass targetClass = factory.getOWLClass(target);
 
-                //get partial closure of target class
-                mireotManager.getPartialClosureForNamedClass(manager, sourceOntologyIRI, target, tempOntology);
+                    //create somewhere to store the named classes in the axioms
+                    Set<OWLClass> namedClassesInAxiom = new HashSet<OWLClass>();
 
-                //grab the source ontology and the owlclass for the target IRI
-                OWLOntology sourceOntology = manager.getOntology(sourceOntologyIRI);
-                OWLDataFactory factory = manager.getOWLDataFactory();
-                OWLClass targetClass = factory.getOWLClass(target);
+                    //get RHS named classes for each axiom on target class
+                    for (OWLSubClassOfAxiom ax : sourceOntology.getSubClassAxiomsForSubClass(targetClass)) {
+                        OWLClassExpression superCls = ax.getSuperClass();
 
-                //create somewhere to store the named classes in the axioms
-                Set<OWLClass> namedClassesInAxiom = new HashSet<OWLClass>();
+                        //if the axiom is not subclassof some named class (this is already covered
+                        if (superCls instanceof OWLAnonymousClassExpression) {
+                            for (OWLClass namedClassInAxiom : superCls.getClassesInSignature()) {
+                                namedClassesInAxiom.add(namedClassInAxiom);
 
-                //get RHS named classes for each axiom on target class
-                for (OWLSubClassOfAxiom ax : sourceOntology.getSubClassAxiomsForSubClass(targetClass)) {
-                    OWLClassExpression superCls = ax.getSuperClass();
-
-                    //if the axiom is not subclassof some named class (this is already covered
-                    if (superCls instanceof OWLAnonymousClassExpression) {
-                        for (OWLClass namedClassInAxiom : superCls.getClassesInSignature()) {
-                            namedClassesInAxiom.add(namedClassInAxiom);
-
+                            }
                         }
                     }
-                }
 
 
-                for(OWLClass c : namedClassesInAxiom){
-                    System.out.println("Named classes in axioms: " + c.toString());
-                    mireotManager.getNamedClassParentsToRoot(manager, sourceOntologyIRI, c.getIRI(), tempOntology);
-
-                }
-
-                //add annotations for all named classes in the new module
-                for (OWLClass moduleClass : tempOntology.getClassesInSignature()) {
-
-                    Set<OWLAnnotation> tempAnnotations = mireotManager.getClassAnnotations(manager, sourceOntologyIRI, moduleClass.getIRI());
-                    //if annotations have been extracted add them to ontology module
-                    if (!tempAnnotations.isEmpty()) {
-                        for (OWLAnnotation a : tempAnnotations) {
-                            OWLAnnotationAxiom annotationAxiom = factory.getOWLAnnotationAssertionAxiom(moduleClass.getIRI(), a);
-                            tempManager.addAxiom(tempOntology, annotationAxiom);
-                        }
+                    for (OWLClass c : namedClassesInAxiom) {
+                        System.out.println("Named classes in axioms: " + c.toString());
+                        mireotManager.getNamedClassParentsToRoot(manager, sourceIRI, c.getIRI(), tempOntology);
 
                     }
 
-                }//end for
-            }
+                    //add annotations for all named classes in the new module
+                    for (OWLClass moduleClass : tempOntology.getClassesInSignature()) {
+
+                        Set<OWLAnnotation> tempAnnotations = mireotManager.getClassAnnotations(manager, sourceIRI, moduleClass.getIRI());
+                        //if annotations have been extracted add them to ontology module
+                        if (!tempAnnotations.isEmpty()) {
+                            for (OWLAnnotation a : tempAnnotations) {
+                                OWLAnnotationAxiom annotationAxiom = factory.getOWLAnnotationAssertionAxiom(moduleClass.getIRI(), a);
+                                tempManager.addAxiom(tempOntology, annotationAxiom);
+                            }
+
+                        }
+
+                    }//end for
+                }//end for each target class
+            }//end for each source ontology
             return tempOntology;
 
         } catch (Exception e) {
@@ -370,6 +328,48 @@ public class ModuleProfileExtractor {
         }
         return null;
     }
+
+
+    /**
+     * @param ontologyLocations location of the
+     * @param activeOntology    ontology which imports the other ontologies form which the module should be sourced
+     * @return
+     */
+    public OWLOntology getFullClosureFromImports(String ontologyLocations, IRI activeOntology) {
+
+
+        return null;
+    }
+
+
+    public OntologyIO loadAllOntologies(Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports, IRI targetOntology) {
+
+        //create ontology io manager
+        OntologyIO ioManager = new OntologyIO();
+
+        //load all ontologies
+        for (String location : ontologyLocations) {
+            ioManager.loadOntologyFromFileLocation(location, ignoreImports);
+        }
+        //set the source and target ontologies
+        ioManager.setSourceOntologies(sourceOntologies);
+        ioManager.setTargetOntology(targetOntology);
+
+
+        //get handle to ontologies and manager they are loaded in to
+        OWLOntologyManager manager = ioManager.getManager();
+        Set<OWLOntology> loadedOntologies = manager.getOntologies();
+        System.out.println("Loaded ontologies " + loadedOntologies.toString());
+
+        return ioManager;
+
+    }
+
+
+
+
+
+
 
 
     public Set<IRI> getOntologySignature(String ontologyLocation, IRI targetOntologyIRI, Boolean ignoreImports){
@@ -399,47 +399,6 @@ public class ModuleProfileExtractor {
 
 
 
-    //inner class for visiting restrictions
-    class RestrictionVisitor extends OWLClassExpressionVisitorAdapter {
-
-        private final Set<OWLClass> processedClasses;
-        private final Set<OWLObjectPropertyExpression> restrictedProperties;
-        private final Set<OWLOntology> onts;
-
-        public RestrictionVisitor(Set<OWLOntology> onts) {
-            restrictedProperties = new HashSet<OWLObjectPropertyExpression>();
-            processedClasses = new HashSet<OWLClass>();
-            this.onts = onts;
-        }
-
-        public Set<OWLObjectPropertyExpression> getRestrictedProperties() {
-            return restrictedProperties;
-        }
-
-        @Override
-        public void visit(OWLClass desc) {
-            if (!processedClasses.contains(desc)) {
-                // If we are processing inherited restrictions then we
-                // recursively visit named supers. Note that we need to keep
-                // track of the classes that we have processed so that we don't
-                // get caught out by cycles in the taxonomy
-                processedClasses.add(desc);
-                for (OWLOntology ont : onts) {
-                    for (OWLSubClassOfAxiom ax : ont
-                            .getSubClassAxiomsForSubClass(desc)) {
-                        ax.getSuperClass().accept(this);
-                    }
-                }
-            }
-        }
-
-        @Override
-        public void visit(OWLObjectSomeValuesFrom desc) {
-            // This method gets called when a class expression is an existential
-            // (someValuesFrom) restriction and it asks us to visit it
-            restrictedProperties.add(desc.getProperty());
-        }
-    }
 
 
 }
