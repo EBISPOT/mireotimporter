@@ -1,8 +1,6 @@
-import com.javafx.tools.doclets.formats.html.SourceToHTMLConverter;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
 import org.semanticweb.owlapi.util.OWLOntologyMerger;
-import org.semanticweb.owlapi.util.SimpleIRIMapper;
 
 import java.io.File;
 import java.util.HashSet;
@@ -79,14 +77,41 @@ public class OntologyIO {
     }
 
 
-    /**
-     * get the OWLOntologyManager used to load ontologies into for this IO class
-     * @return
-     */
+
+    public void loadOntologyFromFileLocationNoMergeImports(String loadLocation) {
+
+        File f = new File(loadLocation);
+
+        try {
+            OWLOntology ontology = this.manager.loadOntologyFromOntologyDocument(f);
+            System.out.println("loaded ontology " + ontology.getOntologyID().toString());
+
+        }
+        catch (OWLOntologyCreationException e) {
+            System.out.println("Ontology failed to load.");
+            e.printStackTrace();
+        }
+    }
+
+
+
+
+
     public OWLOntologyManager getManager(){
         return this.manager;
     }
 
+    public Set<IRI> getLoadedOntologyIRIs(){
+
+        Set<IRI> loadedOntologyIRIs = new HashSet<IRI>();
+
+        for(OWLOntology ontology : manager.getOntologies()) {
+            loadedOntologyIRIs.add(ontology.getOntologyID().getOntologyIRI());
+        }
+
+        return loadedOntologyIRIs;
+
+    }
 
 
     public void saveOntologyToFileLocation(OWLOntology ontology, String saveLocation){

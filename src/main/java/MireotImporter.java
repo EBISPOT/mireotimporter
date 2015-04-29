@@ -35,19 +35,19 @@ public class MireotImporter {
         ontoLocations.add("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
         ontoLocations.add("/Users/malone/cl.owl");
 
-        IRI targetOntology = IRI.create("http://www.ebi.ac.uk/efo/efo.owl");
-        //IRI targetOntology = IRI.create("http://purl.obolibrary.org/obo/cl.owl");
+        //IRI targetOntology = IRI.create("http://www.ebi.ac.uk/efo/efo.owl");
+        IRI targetOntology = IRI.create("http://purl.obolibrary.org/obo/cl.owl");
 
         //OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, ontoLocations, sourceOntologies, false);
-        OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, ontoLocations, sourceOntologies, false);
+        //OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getMireotMerge(classes, ontoLocations, sourceOntologies, targetOntology, false);
         //OWLOntology ontologyModule = moduleExtractor.getPartialClosure(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, ontoLocations, sourceOntologies, false);
+        OWLOntology ontologyModule = moduleExtractor.getFullClosureImportsAsSource(ontoLocations, targetOntology);
 
 
-
-        OntologyIO io = new OntologyIO();
-        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/efo_mireot_full.owl");
+        //OntologyIO io = new OntologyIO();
+        //io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/efo_mireot_full.owl");
 
 
         //Set<IRI> classesInSig = moduleExtractor.getOntologySignature("/Users/malone/cmpo.owl", IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl"));

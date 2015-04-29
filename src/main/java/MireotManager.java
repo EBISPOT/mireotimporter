@@ -1,18 +1,7 @@
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.semanticweb.owlapi.apibinding.OWLManager;
 import org.semanticweb.owlapi.model.*;
-import org.semanticweb.owlapi.reasoner.BufferingMode;
-import org.semanticweb.owlapi.reasoner.NodeSet;
-import org.semanticweb.owlapi.reasoner.OWLReasoner;
-import org.semanticweb.owlapi.reasoner.SimpleConfiguration;
-import org.semanticweb.owlapi.reasoner.structural.StructuralReasoner;
-import uk.ac.manchester.cs.owlapi.modularity.ModuleType;
-import uk.ac.manchester.cs.owlapi.modularity.SyntacticLocalityModuleExtractor;
 
-import javax.xml.transform.Source;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 /**
@@ -244,11 +233,9 @@ public class MireotManager {
                                 nextParents.addAll(tempParents);
                             }
                         }//end for
-
                     }//end while
                 }
                 return tempOntology;
-
             }
             //the target class is in the ontology already
             else{
@@ -261,11 +248,6 @@ public class MireotManager {
                 return null;
     }
 
-
-
-    public void getNamedClassInAxiom(){
-
-    }
 
 
     public OWLOntology getPartialClosureForNamedClass(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetClassIRI, OWLOntology tempOntology) {
@@ -309,28 +291,6 @@ public class MireotManager {
 
 
 
-    public void getFullClosureForNamedClass(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetClassIRI, OWLOntology tempOntology){
-
-        try {
-            //create variables for storing the ontology of parents to root with subclass axioms
-            OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
-            OWLDataFactory factory = tempManager.getOWLDataFactory();
-            OWLClass targetClass = factory.getOWLClass(targetClassIRI);
-            OWLOntology sourceOntology = manager.getOntology(sourceOntologyIRI);
-
-            //get parents to root
-            Set<OWLClass> nextParents = getNamedClassParents(manager, sourceOntologyIRI, targetClassIRI);
-
-
-
-
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-
-
-    }
 
 
 
