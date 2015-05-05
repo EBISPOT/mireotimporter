@@ -264,12 +264,171 @@ public class MireotManager {
         //add axioms to tempOntology
         for(OWLClassAxiom a : namedClassAxioms){
             tempManager.addAxiom(tempOntology, a);
+
+            //check to see if property used in axioms is in the ontology already
+            //get object properties used in the axiom
+            Set<OWLObjectProperty> objectProperties = a.getObjectPropertiesInSignature();
+            for(OWLObjectProperty property : objectProperties) {
+                //if the module ontology does not contain the object property already
+                if(!tempOntology.containsClassInSignature(property.getIRI())) {
+                    OWLDataFactory sourceFactory = manager.getOWLDataFactory();
+                    OWLObjectProperty propertyToAdd = sourceFactory.getOWLObjectProperty(property.getIRI());
+
+                    //add as subproperty of top object propert and then add to module ontology
+                    OWLObjectProperty topProperty = factory.getOWLObjectProperty(IRI.create("http://www.w3.org/2002/07/owl#topObjectProperty"));
+                    OWLAxiom owlSubObjectPropertyOfAxiom = factory.getOWLSubObjectPropertyOfAxiom(propertyToAdd, topProperty);
+                    tempManager.addAxiom(tempOntology, owlSubObjectPropertyOfAxiom);
+
+
+                    /*
+
+                    //process any domains and ranges and add to module ontology
+                    Set<OWLClassExpression> propertyDomains = property.getDomains(sourceOntology);
+                    Set<OWLClassExpression> propertyRanges = property.getRanges(sourceOntology);
+
+                    if(!propertyDomains.isEmpty()) {
+                        for(OWLClassExpression e : propertyDomains){
+                            propertyAxioms.add(sourceFactory.getOWLObjectPropertyDomainAxiom(propertyToAdd,e.asOWLClass()));
+                        }
+                    }
+                    if(!propertyRanges.isEmpty()) {
+                        for(OWLClassExpression e : propertyRanges){
+                            propertyAxioms.add(sourceFactory.getOWLObjectPropertyRangeAxiom(propertyToAdd, e.asOWLClass()));
+                        }
+                    }
+
+
+                    //get any characteristics
+                    Boolean isFunctional = property.isFunctional(sourceOntology);
+                    if(isFunctional){
+                        propertyAxioms.add(sourceFactory.getOWLFunctionalObjectPropertyAxiom(propertyToAdd));
+                    }
+                    Boolean isTransitive = property.isTransitive(sourceOntology);
+                    if(isTransitive){
+                        propertyAxioms.add(sourceFactory.getOWLTransitiveObjectPropertyAxiom(propertyToAdd));
+                    }
+                    Boolean isAsymmetric = property.isAsymmetric(sourceOntology);
+                    if(isAsymmetric){
+                        propertyAxioms.add(sourceFactory.getOWLAsymmetricObjectPropertyAxiom(propertyToAdd));
+                    }
+                    Boolean isInverseFunctional = property.isInverseFunctional(sourceOntology);
+                    if(isInverseFunctional){
+                        propertyAxioms.add(sourceFactory.getOWLInverseFunctionalObjectPropertyAxiom(propertyToAdd));
+                    }
+                    Boolean isIrreflexive = property.isIrreflexive(sourceOntology);
+                    if(isIrreflexive){
+                        propertyAxioms.add(sourceFactory.getOWLIrreflexiveObjectPropertyAxiom(propertyToAdd));
+                    }
+                    Boolean isReflexive = property.isReflexive(sourceOntology);
+                    if(isReflexive){
+                        propertyAxioms.add(sourceFactory.getOWLReflexiveObjectPropertyAxiom(propertyToAdd));
+                    }
+                    Boolean isSymmetric = property.isSymmetric(sourceOntology);
+                    if(isSymmetric){
+                        propertyAxioms.add(sourceFactory.getOWLSymmetricObjectPropertyAxiom(propertyToAdd));
+                    }
+
+                    //get annotation properties on object properties
+                    Set<OWLAnnotation> propertyAnnotations = property.getAnnotations(sourceOntology);
+                    for(OWLAnnotation annot : propertyAnnotations){
+                        propertyAxioms.add(sourceFactory.getOWLAnnotationAssertionAxiom(property.getIRI(), annot));
+                    }
+
+                    //get any disjoints
+                    Set<OWLObjectPropertyExpression> disjoints = property.getDisjointProperties(sourceOntology);
+
+                    */
+
+                    //get characteristics for object properties
+                    Set<OWLAxiom> propertyAxioms = new HashSet<OWLAxiom>();
+                    propertyAxioms = this.getObjectPropertyCharacteristics(sourceOntology, sourceFactory, property, propertyToAdd);
+
+                    //add all axioms about property
+                    tempManager.addAxioms(tempOntology, propertyAxioms);
+
+                    //get any disjoints
+                    Set<OWLObjectPropertyExpression> disjoints = property.getDisjointProperties(sourceOntology);
+
+                    //now call to get properties on these disjoints if they aren't in the ontology already
+
+                }
+            }
+
         }
 
         return tempOntology;
-
     }
 
+
+
+    /**
+     * given an ontology and an object property obtain all of the characteristics as a set of OWLAxioms about
+     * that object property
+     * @return
+     */
+    public Set<OWLAxiom> getObjectPropertyCharacteristics(OWLOntology sourceOntology, OWLDataFactory sourceFactory, OWLObjectProperty property, OWLObjectProperty propertyToAdd){
+
+        //var to store axioms
+        Set<OWLAxiom> propertyAxioms = new HashSet<OWLAxiom>();
+
+        //process any domains and ranges and add to module ontology
+        Set<OWLClassExpression> propertyDomains = property.getDomains(sourceOntology);
+        Set<OWLClassExpression> propertyRanges = property.getRanges(sourceOntology);
+
+        if(!propertyDomains.isEmpty()) {
+            for(OWLClassExpression e : propertyDomains){
+                propertyAxioms.add(sourceFactory.getOWLObjectPropertyDomainAxiom(propertyToAdd,e.asOWLClass()));
+            }
+        }
+        if(!propertyRanges.isEmpty()) {
+            for(OWLClassExpression e : propertyRanges){
+                propertyAxioms.add(sourceFactory.getOWLObjectPropertyRangeAxiom(propertyToAdd, e.asOWLClass()));
+            }
+        }
+
+
+        //get any characteristics
+        Boolean isFunctional = property.isFunctional(sourceOntology);
+        if(isFunctional){
+            propertyAxioms.add(sourceFactory.getOWLFunctionalObjectPropertyAxiom(propertyToAdd));
+        }
+        Boolean isTransitive = property.isTransitive(sourceOntology);
+        if(isTransitive){
+            propertyAxioms.add(sourceFactory.getOWLTransitiveObjectPropertyAxiom(propertyToAdd));
+        }
+        Boolean isAsymmetric = property.isAsymmetric(sourceOntology);
+        if(isAsymmetric){
+            propertyAxioms.add(sourceFactory.getOWLAsymmetricObjectPropertyAxiom(propertyToAdd));
+        }
+        Boolean isInverseFunctional = property.isInverseFunctional(sourceOntology);
+        if(isInverseFunctional){
+            propertyAxioms.add(sourceFactory.getOWLInverseFunctionalObjectPropertyAxiom(propertyToAdd));
+        }
+        Boolean isIrreflexive = property.isIrreflexive(sourceOntology);
+        if(isIrreflexive){
+            propertyAxioms.add(sourceFactory.getOWLIrreflexiveObjectPropertyAxiom(propertyToAdd));
+        }
+        Boolean isReflexive = property.isReflexive(sourceOntology);
+        if(isReflexive){
+            propertyAxioms.add(sourceFactory.getOWLReflexiveObjectPropertyAxiom(propertyToAdd));
+        }
+        Boolean isSymmetric = property.isSymmetric(sourceOntology);
+        if(isSymmetric){
+            propertyAxioms.add(sourceFactory.getOWLSymmetricObjectPropertyAxiom(propertyToAdd));
+        }
+
+        //get annotation properties on object properties
+        Set<OWLAnnotation> propertyAnnotations = property.getAnnotations(sourceOntology);
+        for(OWLAnnotation annot : propertyAnnotations){
+            propertyAxioms.add(sourceFactory.getOWLAnnotationAssertionAxiom(property.getIRI(), annot));
+        }
+
+
+
+
+    return propertyAxioms;
+
+    }
 
 
     public Set<OWLClassAxiom> getNamedClassAxioms(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetClassIRI){

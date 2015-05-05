@@ -319,6 +319,19 @@ public class ModuleProfileExtractor {
                         }
 
                     }//end for
+
+                    /*
+                    for(IRI iri : sourceOntologies) {
+                        OWLOntology o = manager.getOntology(iri);
+                        Set<OWLObjectProperty> objectProperties = o.getObjectPropertiesInSignature();
+                        System.out.println("ontology " + iri);
+                        System.out.println("meow:  " + objectProperties.toString());
+                        for(OWLObjectProperty op : objectProperties){
+
+                        }
+                    }
+                    */
+
                 }//end for each target class
             }//end for each source ontology
             return tempOntology;
@@ -389,8 +402,6 @@ public class ModuleProfileExtractor {
                             }
                         }
                     }
-
-
                     for (OWLClass c : namedClassesInAxiom) {
                         System.out.println("Named classes in axioms: " + c.toString());
                         mireotManager.getNamedClassParentsToRoot(manager, sourceIRI, c.getIRI(), tempOntology);
@@ -411,6 +422,7 @@ public class ModuleProfileExtractor {
                         }
 
                     }//end for
+
                 }//end for each target class
             }//end for each source ontology
             return tempOntology;
