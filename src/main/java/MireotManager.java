@@ -29,7 +29,6 @@ public class MireotManager {
                 OWLClassExpression superCls = ax.getSuperClass();
 
                 if (!superCls.isAnonymous()) {
-                    System.out.println("Parent class: " + superCls.toString());
                     parents.add(superCls.asOWLClass());
                 }
             }
@@ -59,6 +58,7 @@ public class MireotManager {
     public OWLOntology getNamedClassParentsToRoot(OWLOntologyManager manager, IRI ontologyID, IRI targetClassIRI, OWLOntology tempOntology){
 
         try {
+
             //create variables for storing the ontology of parents to root with subclass axioms
             OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
             OWLDataFactory factory = tempManager.getOWLDataFactory();
@@ -328,20 +328,19 @@ public class MireotManager {
             Set<OWLClassExpression> propertyDomains = property.getDomains(tempOntology);
             Set<OWLClassExpression> propertyRanges = property.getRanges(tempOntology);
 
+            System.out.println("property " + property.toString());
+
             if(!propertyDomains.isEmpty()) {
                 for(OWLClassExpression e : propertyDomains){
-                    //check to see if class is in target ontology already, if not add subclass to root
-                    if(!tempOntology.containsClassInSignature(e.asOWLClass().getIRI())){
-                        this.getNamedClassParentsToRoot(manager, sourceOntologyIRI, e.asOWLClass().getIRI(), tempOntology);
-                    }
+                    System.out.println("domain " + e.toString());
+                    this.getNamedClassParentsToRoot(manager, sourceOntologyIRI, e.asOWLClass().getIRI(), tempOntology);
+
                 }
             }
             if(!propertyRanges.isEmpty()) {
                 for(OWLClassExpression e : propertyRanges){
-                    //check to see if class is in target ontology already, if not add subclass to root
-                    if(!tempOntology.containsClassInSignature(e.asOWLClass().getIRI())){
-                        this.getNamedClassParentsToRoot(manager, sourceOntologyIRI, e.asOWLClass().getIRI(), tempOntology);
-                    }
+                    System.out.println("range " + e.toString());
+                    getNamedClassParentsToRoot(manager, sourceOntologyIRI, e.asOWLClass().getIRI(), tempOntology);
                 }
             }
 
