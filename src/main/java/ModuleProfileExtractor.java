@@ -293,11 +293,9 @@ public class ModuleProfileExtractor {
                         if (superCls instanceof OWLAnonymousClassExpression) {
                             for (OWLClass namedClassInAxiom : superCls.getClassesInSignature()) {
                                 namedClassesInAxiom.add(namedClassInAxiom);
-
                             }
                         }
                     }
-
 
                     for (OWLClass c : namedClassesInAxiom) {
                         System.out.println("Named classes in axioms: " + c.toString());
@@ -320,19 +318,12 @@ public class ModuleProfileExtractor {
 
                     }//end for
 
-                    /*
-                    for(IRI iri : sourceOntologies) {
-                        OWLOntology o = manager.getOntology(iri);
-                        Set<OWLObjectProperty> objectProperties = o.getObjectPropertiesInSignature();
-                        System.out.println("ontology " + iri);
-                        System.out.println("meow:  " + objectProperties.toString());
-                        for(OWLObjectProperty op : objectProperties){
-
-                        }
-                    }
-                    */
 
                 }//end for each target class
+
+                //finally get domain and range classes for object properties if they exist and get their paths to root
+                mireotManager.getDomainAndRangeToRoot(manager, sourceIRI, tempOntology);
+
             }//end for each source ontology
             return tempOntology;
 
@@ -424,6 +415,10 @@ public class ModuleProfileExtractor {
                     }//end for
 
                 }//end for each target class
+
+                //finally get domain and range classes for object properties if they exist and get their paths to root
+                mireotManager.getDomainAndRangeToRoot(manager, sourceIRI, tempOntology);
+
             }//end for each source ontology
             return tempOntology;
 

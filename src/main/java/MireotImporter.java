@@ -28,15 +28,16 @@ public class MireotImporter {
         classes.add(IRI.create("http://www.ebi.ac.uk/efo/EFO_0001185"));
 
         Set<IRI> sourceOntologies = new HashSet<IRI>();
-        sourceOntologies.add(IRI.create("http://www.ebi.ac.uk/efo/efo.owl"));
+        sourceOntologies.add(IRI.create("http://www.ebi.ac.uk/efo"));
         sourceOntologies.add(IRI.create("http://purl.obolibrary.org/obo/cl.owl"));
 
         Set<String> ontoLocations = new HashSet<String>();
-        ontoLocations.add("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
+        //ontoLocations.add("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
+        ontoLocations.add("/Users/malone/efo_modified.owl");
         ontoLocations.add("/Users/malone/cl.owl");
         //ontoLocations.add("/Users/malone/cmpo.owl");
 
-        IRI targetOntology = IRI.create("http://www.ebi.ac.uk/efo/efo.owl");
+        IRI targetOntology = IRI.create("http://www.ebi.ac.uk/efo");
         //IRI targetOntology = IRI.create("http://purl.obolibrary.org/obo/cl.owl");
         //IRI targetOntology = IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl");
 
@@ -50,10 +51,10 @@ public class MireotImporter {
 
 
         OntologyIO io = new OntologyIO();
-        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/new_cmpo_module2.owl");
+        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/new_cmpo_module3.owl");
 
 
-       // Set<IRI> classesInSig = moduleExtractor.getOntologySignature("/Users/malone/cmpo.owl", IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl"));
+        //Set<IRI> classesInSig = moduleExtractor.getOntologySignature("/Users/malone/cmpo.owl", IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl"));
         //System.out.println("No of classes " + classesInSig.size());
 
     }

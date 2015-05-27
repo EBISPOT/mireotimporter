@@ -29,6 +29,7 @@ public class MireotManager {
                 OWLClassExpression superCls = ax.getSuperClass();
 
                 if (!superCls.isAnonymous()) {
+                    System.out.println("Parent class: " + superCls.toString());
                     parents.add(superCls.asOWLClass());
                 }
             }
@@ -129,7 +130,7 @@ public class MireotManager {
 
 
 
-    public OWLOntology getNamedClassParentsToExistingClass(OWLOntologyManager manager, IRI sourceOntologyID, IRI targetOntologyIRI, IRI targetClassIRI, OWLOntology tempOntology) {
+    public OWLOntology getNamedClassParentsToExistingClass(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetOntologyIRI, IRI targetClassIRI, OWLOntology tempOntology) {
 
         try {
 
@@ -145,7 +146,7 @@ public class MireotManager {
             //if the target class is not in the ontology then continue
             if(!containsTarget) {
                 //get first set of parents
-                Set<OWLClass> nextParents = getNamedClassParents(manager, sourceOntologyID, targetClassIRI);
+                Set<OWLClass> nextParents = getNamedClassParents(manager, sourceOntologyIRI, targetClassIRI);
 
                 //set flag to enter loop if there are parents
                 Boolean finished;
@@ -179,7 +180,7 @@ public class MireotManager {
                             removeList.add(newParent);
                         }
                     }
-                    //if there are classes already in existance in target, remove form the mireot module
+                    //if there are classes already in existence in target, remove form the mireot module
                     if (!removeList.isEmpty()) {
                         nextParents.removeAll(removeList);
                     }
@@ -197,7 +198,7 @@ public class MireotManager {
                         for (OWLClass c : nextParents) {
                             System.out.println("parent " + c.getIRI());
 
-                            Set<OWLClass> tempSet = getNamedClassParents(manager, sourceOntologyID, c.getIRI());
+                            Set<OWLClass> tempSet = getNamedClassParents(manager, sourceOntologyIRI, c.getIRI());
 
                             if (!tempSet.isEmpty()) {
 
@@ -274,70 +275,10 @@ public class MireotManager {
                     OWLDataFactory sourceFactory = manager.getOWLDataFactory();
                     OWLObjectProperty propertyToAdd = sourceFactory.getOWLObjectProperty(property.getIRI());
 
-                    //add as subproperty of top object propert and then add to module ontology
+                    //add as subproperty of top object property and then add to module ontology
                     OWLObjectProperty topProperty = factory.getOWLObjectProperty(IRI.create("http://www.w3.org/2002/07/owl#topObjectProperty"));
                     OWLAxiom owlSubObjectPropertyOfAxiom = factory.getOWLSubObjectPropertyOfAxiom(propertyToAdd, topProperty);
                     tempManager.addAxiom(tempOntology, owlSubObjectPropertyOfAxiom);
-
-
-                    /*
-
-                    //process any domains and ranges and add to module ontology
-                    Set<OWLClassExpression> propertyDomains = property.getDomains(sourceOntology);
-                    Set<OWLClassExpression> propertyRanges = property.getRanges(sourceOntology);
-
-                    if(!propertyDomains.isEmpty()) {
-                        for(OWLClassExpression e : propertyDomains){
-                            propertyAxioms.add(sourceFactory.getOWLObjectPropertyDomainAxiom(propertyToAdd,e.asOWLClass()));
-                        }
-                    }
-                    if(!propertyRanges.isEmpty()) {
-                        for(OWLClassExpression e : propertyRanges){
-                            propertyAxioms.add(sourceFactory.getOWLObjectPropertyRangeAxiom(propertyToAdd, e.asOWLClass()));
-                        }
-                    }
-
-
-                    //get any characteristics
-                    Boolean isFunctional = property.isFunctional(sourceOntology);
-                    if(isFunctional){
-                        propertyAxioms.add(sourceFactory.getOWLFunctionalObjectPropertyAxiom(propertyToAdd));
-                    }
-                    Boolean isTransitive = property.isTransitive(sourceOntology);
-                    if(isTransitive){
-                        propertyAxioms.add(sourceFactory.getOWLTransitiveObjectPropertyAxiom(propertyToAdd));
-                    }
-                    Boolean isAsymmetric = property.isAsymmetric(sourceOntology);
-                    if(isAsymmetric){
-                        propertyAxioms.add(sourceFactory.getOWLAsymmetricObjectPropertyAxiom(propertyToAdd));
-                    }
-                    Boolean isInverseFunctional = property.isInverseFunctional(sourceOntology);
-                    if(isInverseFunctional){
-                        propertyAxioms.add(sourceFactory.getOWLInverseFunctionalObjectPropertyAxiom(propertyToAdd));
-                    }
-                    Boolean isIrreflexive = property.isIrreflexive(sourceOntology);
-                    if(isIrreflexive){
-                        propertyAxioms.add(sourceFactory.getOWLIrreflexiveObjectPropertyAxiom(propertyToAdd));
-                    }
-                    Boolean isReflexive = property.isReflexive(sourceOntology);
-                    if(isReflexive){
-                        propertyAxioms.add(sourceFactory.getOWLReflexiveObjectPropertyAxiom(propertyToAdd));
-                    }
-                    Boolean isSymmetric = property.isSymmetric(sourceOntology);
-                    if(isSymmetric){
-                        propertyAxioms.add(sourceFactory.getOWLSymmetricObjectPropertyAxiom(propertyToAdd));
-                    }
-
-                    //get annotation properties on object properties
-                    Set<OWLAnnotation> propertyAnnotations = property.getAnnotations(sourceOntology);
-                    for(OWLAnnotation annot : propertyAnnotations){
-                        propertyAxioms.add(sourceFactory.getOWLAnnotationAssertionAxiom(property.getIRI(), annot));
-                    }
-
-                    //get any disjoints
-                    Set<OWLObjectPropertyExpression> disjoints = property.getDisjointProperties(sourceOntology);
-
-                    */
 
                     //get characteristics for object properties
                     Set<OWLAxiom> propertyAxioms = new HashSet<OWLAxiom>();
@@ -351,6 +292,7 @@ public class MireotManager {
 
                     //now call to get properties on these disjoints if they aren't in the ontology already
 
+
                 }
             }
 
@@ -359,6 +301,54 @@ public class MireotManager {
         return tempOntology;
     }
 
+
+    /**
+     *
+     * @param manager
+     * @param sourceOntologyIRI
+     * @param tempOntology
+     * @return
+     */
+    public OWLOntology getDomainAndRangeToRoot(OWLOntologyManager manager, IRI sourceOntologyIRI, OWLOntology tempOntology){
+
+
+        System.out.println("attempting to get domain and range roots");
+
+        //var to store axioms about properties
+        Set<OWLAxiom> propertyAxioms = new HashSet<OWLAxiom>();
+        OWLDataFactory factory = manager.getOWLDataFactory();
+        OWLOntology sourceOntology = manager.getOntology(sourceOntologyIRI);
+
+        //get all object properties in the ontology and iterate through each one
+        Set<OWLObjectProperty> properties = tempOntology.getObjectPropertiesInSignature();
+
+        for(OWLObjectProperty property : properties){
+
+            //process any domains and ranges and add to module ontology
+            Set<OWLClassExpression> propertyDomains = property.getDomains(tempOntology);
+            Set<OWLClassExpression> propertyRanges = property.getRanges(tempOntology);
+
+            if(!propertyDomains.isEmpty()) {
+                for(OWLClassExpression e : propertyDomains){
+                    //check to see if class is in target ontology already, if not add subclass to root
+                    if(!tempOntology.containsClassInSignature(e.asOWLClass().getIRI())){
+                        this.getNamedClassParentsToRoot(manager, sourceOntologyIRI, e.asOWLClass().getIRI(), tempOntology);
+                    }
+                }
+            }
+            if(!propertyRanges.isEmpty()) {
+                for(OWLClassExpression e : propertyRanges){
+                    //check to see if class is in target ontology already, if not add subclass to root
+                    if(!tempOntology.containsClassInSignature(e.asOWLClass().getIRI())){
+                        this.getNamedClassParentsToRoot(manager, sourceOntologyIRI, e.asOWLClass().getIRI(), tempOntology);
+                    }
+                }
+            }
+
+        }
+
+        return tempOntology;
+    }
 
 
     /**
@@ -385,7 +375,6 @@ public class MireotManager {
                 propertyAxioms.add(sourceFactory.getOWLObjectPropertyRangeAxiom(propertyToAdd, e.asOWLClass()));
             }
         }
-
 
         //get any characteristics
         Boolean isFunctional = property.isFunctional(sourceOntology);
@@ -423,12 +412,10 @@ public class MireotManager {
             propertyAxioms.add(sourceFactory.getOWLAnnotationAssertionAxiom(property.getIRI(), annot));
         }
 
-
-
-
     return propertyAxioms;
 
     }
+
 
 
     public Set<OWLClassAxiom> getNamedClassAxioms(OWLOntologyManager manager, IRI sourceOntologyIRI, IRI targetClassIRI){
@@ -440,10 +427,6 @@ public class MireotManager {
         OWLClass targetClass = factory.getOWLClass(targetClassIRI);
 
         targetAxioms = sourceOntology.getAxioms(targetClass);
-
-        for(OWLClassAxiom a : targetAxioms){
-            System.out.println("axiom on target: " + a.toString());
-        }
 
         return targetAxioms;
     }
