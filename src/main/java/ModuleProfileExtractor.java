@@ -19,7 +19,8 @@ public class ModuleProfileExtractor {
      *
      * @param targetClasses     The set of class IRIs for which the mireot module is required
      * @param ontologyLocations The set of ontology locations from which the source is contained
-     * @param sourceOntologies  The set of ontologies from which the mireot should be extracted (i.e. the 'full' ontologies)
+     * @param sourceOntologies  The set of ontologies from which the mireot should be extracted (i.e. the source ontologies)
+     * @param ignoreImports     Flag to ignore the import closures on the source ontologies
      * @return
      */
     public OWLOntology getMireotBasic(Set<IRI> targetClasses, Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports) {
@@ -84,6 +85,82 @@ public class ModuleProfileExtractor {
     }
 
 
+
+    /**
+     * Extract a basic MIREOT for a set of named classes from an ontology(ies) loaded into an OWLOntologyManager.
+     * This corresponds to the MIREOT publication in Courtot et al, (2011)
+     *
+     * @param targetClasses     The set of class IRIs for which the mireot module is required
+     * @param manager The manager into which the ontology sources are loaded
+     * @param sourceOntologies  The IRIs of set of ontologies from which the mireot should be extracted (i.e. the source ontologies)
+     * @return
+     */
+    public OWLOntology getMireotBasic(Set<IRI> targetClasses, OWLOntologyManager manager, Set<IRI> sourceOntologies) {
+
+        try {
+            //create variables required
+            MireotManager mireotManager = new MireotManager();
+            //variables for storing ontology module
+            // Get hold of an ontology manager
+            OWLOntologyManager tempManager = OWLManager.createOWLOntologyManager();
+            IRI iriTemp = IRI.create("http://mireotmodule.owl");
+            OWLOntology tempOntology = tempManager.createOntology(iriTemp);
+            OWLDataFactory factory = tempManager.getOWLDataFactory();
+            Set<OWLClass> namedParents = new HashSet<OWLClass>();
+            Set<OWLAnnotation> annotations = new HashSet<OWLAnnotation>();
+
+            //iterate through target classes and extract basic mireot
+            for (IRI sourceIRI : sourceOntologies) {
+                for (IRI target : targetClasses) {
+
+                    OWLClass targetOWLClass = factory.getOWLClass(target);
+
+                    //get named parents of target class
+                    namedParents = mireotManager.getNamedClassParents(manager, sourceIRI, target);
+
+                    //add named classes to ontology
+                    for (OWLClass parentClass : namedParents) {
+                        OWLDeclarationAxiom namedParentAxiom = factory.getOWLDeclarationAxiom(parentClass);
+
+                        OWLAxiom subclassAxiom = factory.getOWLSubClassOfAxiom(targetOWLClass, parentClass);
+
+                        tempManager.addAxiom(tempOntology, namedParentAxiom);
+                        tempManager.addAxiom(tempOntology, subclassAxiom);
+                    }
+
+                    //get annotations
+                    annotations = mireotManager.getClassAnnotations(manager, sourceIRI, target);
+
+                    for (OWLAnnotation a : annotations) {
+                        OWLAnnotationAxiom annotationAxiom = factory.getOWLAnnotationAssertionAxiom(target, a);
+                        tempManager.addAxiom(tempOntology, annotationAxiom);
+                    }
+
+                }
+            }
+            //get the ontology
+            OWLOntology onto = tempManager.getOntology(iriTemp);
+
+            return tempManager.getOntology(iriTemp);
+
+        } catch (OWLOntologyCreationException e) {
+            e.printStackTrace();
+        }
+
+        //if all else fails
+        return null;
+    }
+
+
+    /**
+     * Extract OWL module of mireot plus the path to root of the target classes and their annotations
+     *
+     * @param targetClasses The set of class IRIs for which the mireot module is required
+     * @param ontologyLocations The set of ontology locations from which the source is contained
+     * @param sourceOntologies The IRIs of set of ontologies from which the mireot should be extracted (i.e. the source ontologies)
+     * @param ignoreImports Flag to ignore the import closures on the source ontologies
+     * @return
+     */
     public OWLOntology getMireotFull(Set<IRI> targetClasses, Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports) {
 
         try {
@@ -92,6 +169,25 @@ public class ModuleProfileExtractor {
             OntologyIO ioManager = this.loadAllOntologies(ontologyLocations, sourceOntologies, ignoreImports, null);
             //get handle to ontologies and manager they are loaded in to
             OWLOntologyManager manager = ioManager.getManager();
+
+            //chain to method using loaded ontologies
+            OWLOntology ontology = getMireotFull(targetClasses, manager, sourceOntologies);
+
+            return ontology;
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+
+
+
+    public OWLOntology getMireotFull(Set<IRI> targetClasses, OWLOntologyManager manager, Set<IRI> sourceOntologies) {
+
+        try {
 
             //create variables required
             MireotManager mireotManager = new MireotManager();
@@ -134,8 +230,8 @@ public class ModuleProfileExtractor {
             e.printStackTrace();
         }
         return null;
-    }
 
+    }
 
     public OWLOntology getMireotMerge(Set<IRI> targetClasses, Set<String> ontologyLocations, Set<IRI> sourceOntologies, IRI targetOntologyIRI, Boolean ignoreImports) {
 

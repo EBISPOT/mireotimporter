@@ -42,16 +42,28 @@ public class MireotImporter {
         //IRI targetOntology = IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl");
 
 
+
+        //block of code to load ontologies before calling methods
+        //load all ontologies
+        OntologyIO ioManager = moduleExtractor.loadAllOntologies(ontoLocations, sourceOntologies, false, null);
+        //get handle to ontologies and manager they are loaded in to
+        OWLOntologyManager manager = ioManager.getManager();
+
+        //ontologies loaded already
+        //OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, manager, sourceOntologies);
+        OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, manager, sourceOntologies);
+
+        //load through file location
         //OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getMireotMerge(classes, ontoLocations, sourceOntologies, targetOntology, false);
         //OWLOntology ontologyModule = moduleExtractor.getPartialClosure(classes, ontoLocations, sourceOntologies, false);
-        OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, ontoLocations, sourceOntologies, false);
+        //OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getFullClosureImportsAsSource(ontoLocations, targetOntology);
 
 
         OntologyIO io = new OntologyIO();
-        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/new_cmpo_module3.owl");
+        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/cmpo_basic.owl");
 
 
         //Set<IRI> classesInSig = moduleExtractor.getOntologySignature("/Users/malone/cmpo.owl", IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl"));
