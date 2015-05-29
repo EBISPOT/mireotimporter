@@ -224,16 +224,17 @@ public class MireotManager {
                                     }
                                 }
                             }
-                            //stop if there are no parents - we've reached top
-                            if (tempParents.isEmpty()) {
-                                finished = true;
-                            } else {
-
-                                finished = false;
-                                nextParents.clear();
-                                nextParents.addAll(tempParents);
-                            }
                         }//end for
+
+                        //stop if there are no parents - we've reached top
+                        if (tempParents.isEmpty()) {
+                            finished = true;
+                        } else {
+
+                            finished = false;
+                            nextParents.clear();
+                            nextParents.addAll(tempParents);
+                        }
                     }//end while
                 }
                 return tempOntology;

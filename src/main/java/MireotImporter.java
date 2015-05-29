@@ -24,11 +24,13 @@ public class MireotImporter {
         Set<IRI> classes = new HashSet<IRI>();
         classes.add(IRI.create("http://purl.obolibrary.org/obo/CL_0000109"));
         classes.add(IRI.create("http://purl.obolibrary.org/obo/CL_0000019"));
+        classes.add(IRI.create("http://purl.obolibrary.org/obo/CL_0011006"));
+        classes.add(IRI.create("http://purl.obolibrary.org/obo/GO_0030017"));
         classes.add(IRI.create("http://www.ebi.ac.uk/efo/EFO_0000400"));
         classes.add(IRI.create("http://www.ebi.ac.uk/efo/EFO_0001185"));
 
         Set<IRI> sourceOntologies = new HashSet<IRI>();
-        sourceOntologies.add(IRI.create("http://www.ebi.ac.uk/efo"));
+        //sourceOntologies.add(IRI.create("http://www.ebi.ac.uk/efo"));
         sourceOntologies.add(IRI.create("http://purl.obolibrary.org/obo/cl.owl"));
 
         Set<String> ontoLocations = new HashSet<String>();
@@ -45,13 +47,14 @@ public class MireotImporter {
 
         //block of code to load ontologies before calling methods
         //load all ontologies
-        OntologyIO ioManager = moduleExtractor.loadAllOntologies(ontoLocations, sourceOntologies, false, null);
+        OntologyIO ioManager = moduleExtractor.loadAllOntologies(ontoLocations, sourceOntologies, false, targetOntology);
         //get handle to ontologies and manager they are loaded in to
         OWLOntologyManager manager = ioManager.getManager();
 
         //ontologies loaded already
         //OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, manager, sourceOntologies);
-        OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, manager, sourceOntologies);
+        //OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, manager, sourceOntologies);
+        OWLOntology ontologyModule = moduleExtractor.getMireotMerge(classes, manager, sourceOntologies, targetOntology);
 
         //load through file location
         //OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, ontoLocations, sourceOntologies, false);
