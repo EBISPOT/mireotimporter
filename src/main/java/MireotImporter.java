@@ -54,14 +54,16 @@ public class MireotImporter {
         //ontologies loaded already
         //OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, manager, sourceOntologies);
         //OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, manager, sourceOntologies);
-        OWLOntology ontologyModule = moduleExtractor.getMireotMerge(classes, manager, sourceOntologies, targetOntology);
+        //OWLOntology ontologyModule = moduleExtractor.getMireotMerge(classes, manager, sourceOntologies, targetOntology);
+        //OWLOntology ontologyModule = moduleExtractor.getPartialClosure(classes, manager, sourceOntologies);
+        //OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, manager, sourceOntologies);
 
         //load through file location
         //OWLOntology ontologyModule = moduleExtractor.getMireotBasic(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getMireotMerge(classes, ontoLocations, sourceOntologies, targetOntology, false);
         //OWLOntology ontologyModule = moduleExtractor.getPartialClosure(classes, ontoLocations, sourceOntologies, false);
-        //OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, ontoLocations, sourceOntologies, false);
+        OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getFullClosureImportsAsSource(ontoLocations, targetOntology);
 
 
