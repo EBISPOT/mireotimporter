@@ -519,25 +519,67 @@ public class ModuleProfileExtractor {
     }
 
 
+
     /**
-     * @param ontologyLocations location of the
+     * Use the signature of the active ontology as the source of all classes for which the closure should be extracted.
+     * The imports on this ontology are used as the source from which these classes should be extracted. For example,
+     * a class GO_0000001 and GO_0000002 in the active ontology, which declares an import of all of Gene Ontology will
+     * extract the full closure for the classes GO_0000001 and GO_0000002 from Gene Ontology
+     *
+     * @param ontologyLocations location of the source ontology
      * @param activeOntology    ontology which imports the other ontologies form which the module should be sourced
      * @return
      */
     public OWLOntology getFullClosureImportsAsSource(Set<String> ontologyLocations, IRI activeOntology) {
 
         try {
-            //create ontology io manager
-            OntologyIO ioManager = new OntologyIO();
-            ioManager = this.loadAllOntologiesNoMerge(ontologyLocations, activeOntology);
-            //get the source ontologies from those loaded
-            Set<IRI> sourceOntologies = ioManager.getSourceOntologies();
-            //target classes are all of those in the activeOntology - get the classes in this signature
-            Set<IRI> targetClassIRIs = this.getOntologySignature(ioManager, activeOntology);
-
-
+            //load all ontologies
+            OntologyIO ioManager = this.loadAllOntologiesNoMerge(ontologyLocations, activeOntology);
             //get handle to ontologies and manager they are loaded in to
             OWLOntologyManager manager = ioManager.getManager();
+
+            //chain to method using loaded ontologies
+            OWLOntology ontology = getFullClosureImportsAsSource(manager, activeOntology);
+
+            return ontology;
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        return null;
+    }
+
+
+    /**
+     * Use the signature of the active ontology as the source of all classes for which the closure should be extracted.
+     * The imports on this ontology are used as the source from which these classes should be extracted. For example,
+     * a class GO_0000001 and GO_0000002 in the active ontology, which declares an import of all of Gene Ontology will
+     * extract the full closure for the classes GO_0000001 and GO_0000002 from Gene Ontology
+     *
+     * @param manager ontology manager into which all ontologies are loaded
+     * @param activeOntology    ontology which imports the other ontologies form which the module should be sourced
+     * @return
+     */
+    public OWLOntology getFullClosureImportsAsSource(OWLOntologyManager manager, IRI activeOntology) {
+
+        try {
+
+            //get source ontologies
+            Set<IRI> sourceOntologyIRIs = new HashSet<IRI>();
+
+            for(OWLOntology ontology : manager.getOntologies()) {
+                sourceOntologyIRIs.add(ontology.getOntologyID().getOntologyIRI());
+            }
+
+            //remove the target from the total ontology IRIs - this leaves just the source ontologies
+            sourceOntologyIRIs.remove(activeOntology);
+
+            //target classes are all of those in the activeOntology - get the classes in this signature
+            Set<IRI> targetClassIRIs = this.getOntologySignature(manager, activeOntology);
+
             //create variables required
             MireotManager mireotManager = new MireotManager();
             //variables for storing ontology module
@@ -547,7 +589,7 @@ public class ModuleProfileExtractor {
             OWLOntology tempOntology = tempManager.createOntology(iriTemp);
 
             //iterate through each source ontology
-            for (IRI sourceIRI : sourceOntologies) {
+            for (IRI sourceIRI : sourceOntologyIRIs) {
                 for (IRI target : targetClassIRIs) {
 
                     System.out.println("Attempting to extract full closure for " + target);
@@ -618,7 +660,6 @@ public class ModuleProfileExtractor {
 
 
 
-
     public OntologyIO loadAllOntologies(Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports, IRI targetOntology) {
 
         //create ontology io manager
@@ -677,10 +718,10 @@ public class ModuleProfileExtractor {
         //set the source and target ontologies
         ioManager.setTargetOntology(targetOntology);
         Set<IRI> loadedOntologyIRIs = ioManager.getLoadedOntologyIRIs();
+        //remove the target from the total ontology IRIs - this leaves just the source ontologies
         loadedOntologyIRIs.remove(targetOntology);
-
+        //explciitly set the sources as these reminaing ontology IRIs
         ioManager.setSourceOntologies(loadedOntologyIRIs);
-
 
         System.out.println("Target Ontology: " + ioManager.getTargetOntology());
         System.out.println("Source ontologies: " + ioManager.getSourceOntologies());
@@ -708,6 +749,21 @@ public class ModuleProfileExtractor {
         return targetClassIRIs;
     }
 
+
+
+
+    public Set<IRI> getOntologySignature(OWLOntologyManager manager, IRI targetOntologyIRI){
+
+        Set<IRI> targetClassIRIs = new HashSet<IRI>();
+
+        OWLOntology targetOntology = manager.getOntology(targetOntologyIRI);
+
+        for(OWLClass cls : targetOntology.getClassesInSignature()){
+            targetClassIRIs.add(cls.getIRI());
+        }
+
+        return targetClassIRIs;
+    }
 
 
     public Set<IRI> getOntologySignature(Set<String> ontologyLocations, IRI targetOntologyIRI, Boolean ignoreImports){

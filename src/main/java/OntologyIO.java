@@ -83,6 +83,7 @@ public class OntologyIO {
         File f = new File(loadLocation);
 
         try {
+            System.out.println("Attempting ontology load from" + loadLocation);
             OWLOntology ontology = this.manager.loadOntologyFromOntologyDocument(f);
             System.out.println("loaded ontology " + ontology.getOntologyID().toString());
 

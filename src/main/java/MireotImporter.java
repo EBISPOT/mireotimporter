@@ -31,17 +31,17 @@ public class MireotImporter {
 
         Set<IRI> sourceOntologies = new HashSet<IRI>();
         //sourceOntologies.add(IRI.create("http://www.ebi.ac.uk/efo"));
-        sourceOntologies.add(IRI.create("http://purl.obolibrary.org/obo/cl.owl"));
+        //sourceOntologies.add(IRI.create("http://purl.obolibrary.org/obo/cl.owl"));
 
         Set<String> ontoLocations = new HashSet<String>();
         //ontoLocations.add("/Users/malone/EFO/EFOSourceForge/trunk/src/efoinowl/efo.owl");
-        ontoLocations.add("/Users/malone/efo_modified.owl");
-        ontoLocations.add("/Users/malone/cl.owl");
-        //ontoLocations.add("/Users/malone/cmpo.owl");
+        //ontoLocations.add("/Users/malone/efo_modified.owl");
+        //ontoLocations.add("/Users/malone/cl.owl");
+        ontoLocations.add("/Users/malone/cmpo.owl");
 
-        IRI targetOntology = IRI.create("http://www.ebi.ac.uk/efo");
+        //IRI targetOntology = IRI.create("http://www.ebi.ac.uk/efo");
         //IRI targetOntology = IRI.create("http://purl.obolibrary.org/obo/cl.owl");
-        //IRI targetOntology = IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl");
+        IRI targetOntology = IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl");
 
 
 
@@ -63,12 +63,12 @@ public class MireotImporter {
         //OWLOntology ontologyModule = moduleExtractor.getMireotFull(classes, ontoLocations, sourceOntologies, false);
         //OWLOntology ontologyModule = moduleExtractor.getMireotMerge(classes, ontoLocations, sourceOntologies, targetOntology, false);
         //OWLOntology ontologyModule = moduleExtractor.getPartialClosure(classes, ontoLocations, sourceOntologies, false);
-        OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, ontoLocations, sourceOntologies, false);
-        //OWLOntology ontologyModule = moduleExtractor.getFullClosureImportsAsSource(ontoLocations, targetOntology);
+        //OWLOntology ontologyModule = moduleExtractor.getFullClosure(classes, ontoLocations, sourceOntologies, false);
+        OWLOntology ontologyModule = moduleExtractor.getFullClosureImportsAsSource(ontoLocations, targetOntology);
 
 
         OntologyIO io = new OntologyIO();
-        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/cmpo_basic.owl");
+        io.saveOntologyToFileLocation(ontologyModule, "file:/Users/malone/cmpo_full_from_source.owl");
 
 
         //Set<IRI> classesInSig = moduleExtractor.getOntologySignature("/Users/malone/cmpo.owl", IRI.create("http://www.ebi.ac.uk/cmpo/cmpo.owl"));
