@@ -536,6 +536,7 @@ public class ModuleProfileExtractor {
 
 
 
+
     /**
      * Use the signature of the active ontology as the source of all classes for which the closure should be extracted.
      * The imports on this ontology are used as the source from which these classes should be extracted. For example,
@@ -544,7 +545,7 @@ public class ModuleProfileExtractor {
      *
      * @param ontologyLocations location of the source ontology
      * @param activeOntology    ontology which imports the other ontologies form which the module should be sourced
-     * @return
+     * @return ontology module
      */
     public OWLOntology getFullClosureImportsAsSource(Set<String> ontologyLocations, IRI activeOntology) {
 
