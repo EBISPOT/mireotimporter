@@ -346,10 +346,16 @@ public class ModuleProfileExtractor {
     }
 
 
-
-
-
-
+    /** Follow limited closure of requested class(es) - including all axioms on a class (annotations and class descriptions)
+     * and all named named classes mentioned in those axioms. Does not pull in path to root of each additional class or
+     * any further closure on those additional classes.
+     *
+     * @param targetClasses
+     * @param ontologyLocations
+     * @param sourceOntologies
+     * @param ignoreImports
+     * @return
+     */
     public OWLOntology getPartialClosure(Set<IRI> targetClasses, Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports) {
 
         try {
@@ -418,7 +424,17 @@ public class ModuleProfileExtractor {
     }
 
 
-
+    /**
+     * Follow limited closure of requested class(es) - including all axioms on a class (annotations and class descriptions)
+     * and all named named classes mentioned in those axioms. Does not pull in path to root of each additional class or
+     * any further closure on those additional classes.
+     *
+     * @param targetClassIRIs
+     * @param ontologyLocations
+     * @param sourceOntologies
+     * @param ignoreImports
+     * @return
+     */
     public OWLOntology getFullClosure(Set<IRI> targetClassIRIs, Set<String> ontologyLocations, Set<IRI> sourceOntologies, Boolean ignoreImports) {
 
         try {
